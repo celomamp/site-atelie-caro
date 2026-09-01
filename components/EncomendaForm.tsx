@@ -1,7 +1,6 @@
 // components/EncomendaForm.tsx
 "use client";
 import { useState } from "react";
-import { SITE } from "@/lib/config";
 import { whatsappLink } from "@/lib/whatsapp";
 
 export default function EncomendaForm() {

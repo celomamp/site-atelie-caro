@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useCart } from "./CartContext";
 import { buildWhatsAppOrderMessage, whatsappLink } from "@/lib/whatsapp";
+import { formatBRL } from "@/lib/cart";
 
 export default function CheckoutForm() {
   const { items, total, clear } = useCart();
@@ -38,7 +39,7 @@ export default function CheckoutForm() {
           onChange={(e) => setContact(e.target.value)}
         />
         <p className="text-sm text-gray-500">
-          Total: <span className="font-bold text-magenta">{total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+          Total: <span className="font-bold text-magenta">{formatBRL(total)}</span>
         </p>
         <button
           onClick={handleSend}

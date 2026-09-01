@@ -58,7 +58,7 @@ export default async function ProdutosPage({
             </Link>
           ))}
         </div>
-        <SortSelect categoria={cat} />
+        <SortSelect categoria={cat} ordenar={order} />
       </div>
 
       {products.length === 0 ? (

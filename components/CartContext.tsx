@@ -34,13 +34,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    if (!loaded) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // storage may be unavailable (private mode/quota); ignore
+    }
   }, [items, loaded]);
 
   const count = items.reduce((a, i) => a + i.qty, 0);
   const total = items.reduce((a, i) => a + i.unitPrice * i.qty, 0);
 
-  const addItem = (item: CartItem) =>
+  const addItem = (item: CartItem) => {
+    if (item.qty <= 0) return;
     setItems((prev) => {
       const existing = prev.find((i) => i.slug === item.slug);
       if (existing)
@@ -49,6 +55,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
       return [...prev, item];
     });
+  };
 
   const removeItem = (slug: string) =>
     setItems((prev) => prev.filter((i) => i.slug !== slug));

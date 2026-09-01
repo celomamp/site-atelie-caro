@@ -44,14 +44,18 @@ export default async function WorkshopDetailPage({
           </div>
           <div className="mt-6 flex items-center justify-between">
             <p className="text-2xl font-bold text-magenta">{formatBRL(Number(workshop.price))}</p>
-            <a
-              href={whatsappLink(message)}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded bg-cobalt px-6 py-3 font-semibold text-white hover:bg-blue-700"
-            >
-              Inscrever-se pelo WhatsApp
-            </a>
+            {spots <= 0 ? (
+              <span className="rounded bg-clay px-6 py-3 font-semibold text-white">Esgotado</span>
+            ) : (
+              <a
+                href={whatsappLink(message)}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded bg-cobalt px-6 py-3 font-semibold text-white hover:bg-blue-700"
+              >
+                Inscrever-se pelo WhatsApp
+              </a>
+            )}
           </div>
         </div>
       </div>

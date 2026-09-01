@@ -29,12 +29,18 @@ export default function Header() {
           ))}
           <CartButton />
         </nav>
-        <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+        <button
+          className="md:hidden"
+          onClick={() => setOpen(!open)}
+          aria-label="Menu"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+        >
           ☰
         </button>
       </div>
       {open && (
-        <nav className="flex flex-col gap-3 px-4 pb-4 md:hidden">
+        <nav id="mobile-nav" aria-label="Menu de navegação" className="flex flex-col gap-3 px-4 pb-4 md:hidden">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} onClick={() => setOpen(false)}>
               {n.label}

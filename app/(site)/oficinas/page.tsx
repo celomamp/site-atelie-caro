@@ -16,6 +16,9 @@ export default async function OficinasPage() {
       <h1 className="font-display text-4xl font-bold">Oficinas de Cerâmica</h1>
       <p className="mt-2 text-gray-600">Coloque a mão na massa e aprenda cerâmica artesanal.</p>
 
+      {workshops.length === 0 && (
+        <p className="mt-8 text-gray-500">Nenhuma oficina disponível no momento.</p>
+      )}
       <div className="mt-8 grid gap-6 md:grid-cols-2">
         {workshops.map((w) => (
           <Link key={w.slug} href={`/oficinas/${w.slug}`} className="rounded-lg bg-white p-6 shadow hover:shadow-md">

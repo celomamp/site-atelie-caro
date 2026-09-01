@@ -19,12 +19,6 @@ export default async function HomePage() {
     where: { featured: true, available: true },
     take: 4,
   });
-  const workshops = await prisma.workshop.findMany({
-    where: { active: true },
-    orderBy: { date: "asc" },
-    take: 2,
-  });
-
   const products = featured.map((p) => ({
     slug: p.slug,
     name: p.name,

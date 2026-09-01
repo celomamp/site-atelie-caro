@@ -4,13 +4,19 @@ import { useRouter } from "next/navigation";
 
 type Props = { initial?: any; workshopId?: string };
 
+function toLocalDatetime(date: Date | string): string {
+  const d = new Date(date);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function WorkshopForm({ initial, workshopId }: Props) {
   const router = useRouter();
   const [form, setForm] = useState({
     title: initial?.title || "",
     slug: initial?.slug || "",
     description: initial?.description || "",
-    date: initial ? new Date(initial.date).toISOString().slice(0, 16) : "",
+    date: initial ? toLocalDatetime(initial.date) : "",
     duration: initial ? String(initial.duration) : "180",
     price: initial ? String(initial.price) : "",
     location: initial?.location || "",
@@ -19,6 +25,7 @@ export default function WorkshopForm({ initial, workshopId }: Props) {
     image: initial?.image || "",
     active: initial?.active ?? true,
   });
+  const [error, setError] = useState("");
 
   function set(field: string, value: any) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -26,20 +33,30 @@ export default function WorkshopForm({ initial, workshopId }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     const url = workshopId ? `/api/admin/oficinas/${workshopId}` : "/api/admin/oficinas";
-    const res = await fetch(url, {
-      method: workshopId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        date: new Date(form.date).toISOString(),
-        duration: parseInt(form.duration),
-        price: parseFloat(form.price),
-        maxAttendees: parseInt(form.maxAttendees),
-        spotsTaken: parseInt(form.spotsTaken),
-      }),
-    });
-    if (res.ok) router.push("/admin/oficinas");
+    try {
+      const res = await fetch(url, {
+        method: workshopId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          date: new Date(form.date).toISOString(),
+          duration: parseInt(form.duration),
+          price: parseFloat(form.price),
+          maxAttendees: parseInt(form.maxAttendees),
+          spotsTaken: parseInt(form.spotsTaken),
+          image: form.image || null,
+        }),
+      });
+      if (!res.ok) {
+        setError("Não foi possível salvar a oficina. Verifique os dados e tente novamente.");
+        return;
+      }
+      router.push("/admin/oficinas");
+    } catch {
+      setError("Erro de conexão. Não foi possível salvar a oficina.");
+    }
   }
 
   return (
@@ -67,6 +84,7 @@ export default function WorkshopForm({ initial, workshopId }: Props) {
       <label className="flex items-center gap-2"><input type="checkbox" checked={form.active}
         onChange={(e) => set("active", e.target.checked)} /> Ativa</label>
       <div className="md:col-span-2">
+        {error && <p className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         <button className="rounded bg-cobalt px-6 py-2 font-semibold text-white">Salvar oficina</button>
       </div>
     </form>

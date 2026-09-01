@@ -25,11 +25,15 @@ export default function AdminEncomendasPage() {
   }, []);
 
   async function updateStatus(id: string, status: string) {
-    await fetch(`/api/admin/encomendas/${id}`, {
+    const res = await fetch(`/api/admin/encomendas/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    if (!res.ok) {
+      alert("Não foi possível atualizar o status.");
+      return;
+    }
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
   }
 

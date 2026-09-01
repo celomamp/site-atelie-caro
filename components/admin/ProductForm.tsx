@@ -35,6 +35,7 @@ export default function ProductForm({ initial, productId }: Props) {
   });
   const [images, setImages] = useState<string[]>(() => parseImages(initial?.images));
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
   function set(field: string, value: any) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -44,23 +45,43 @@ export default function ProductForm({ initial, productId }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-    const data = await res.json();
-    if (data.ok) setImages((prev) => [...prev, data.url]);
-    setUploading(false);
+    setError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      if (!res.ok) {
+        setError("Não foi possível enviar a imagem. Verifique o formato e o tamanho.");
+        return;
+      }
+      const data = await res.json();
+      if (data.ok) setImages((prev) => [...prev, data.url]);
+      else setError("Não foi possível enviar a imagem.");
+    } catch {
+      setError("Erro de conexão ao enviar a imagem.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     const url = productId ? `/api/admin/produtos/${productId}` : "/api/admin/produtos";
-    const res = await fetch(url, {
-      method: productId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock), images }),
-    });
-    if (res.ok) router.push("/admin/produtos");
+    try {
+      const res = await fetch(url, {
+        method: productId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock), images }),
+      });
+      if (!res.ok) {
+        setError("Não foi possível salvar o produto. Verifique se o slug já existe ou os dados e tente novamente.");
+        return;
+      }
+      router.push("/admin/produtos");
+    } catch {
+      setError("Erro de conexão. Não foi possível salvar o produto.");
+    }
   }
 
   return (
@@ -90,6 +111,7 @@ export default function ProductForm({ initial, productId }: Props) {
       <div className="md:col-span-2">
         <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
         {uploading && <p className="text-sm text-gray-500">Enviando...</p>}
+        {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         {images.length > 0 && (
           <div className="mt-2 flex gap-2">
             {images.map((img, i) => (
