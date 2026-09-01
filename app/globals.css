@@ -1,0 +1,14 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-playfair: "Playfair Display", serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-pacifico: "Pacifico", cursive;
+}
+
+body {
+  @apply bg-cream text-ink font-body;
+}
