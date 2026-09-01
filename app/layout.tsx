@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { Playfair_Display, Montserrat, Pacifico } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body className={`${playfair.variable} ${montserrat.variable} ${pacifico.variable}`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
