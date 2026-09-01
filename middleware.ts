@@ -11,13 +11,18 @@ export async function middleware(req: Request) {
     cookieName: SESSION_COOKIE,
   });
   const url = new URL(req.url);
-  const isLogin = url.pathname.startsWith("/admin/login");
+  const isLogin =
+    url.pathname.startsWith("/admin/login") ||
+    url.pathname.startsWith("/api/admin/login");
   if (!session.isAdmin && !isLogin) {
+    if (url.pathname.startsWith("/api/")) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/admin/login", req.url));
   }
   return res;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
