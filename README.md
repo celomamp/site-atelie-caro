@@ -5,7 +5,7 @@ encomendas personalizadas e oficinas, com pedidos via WhatsApp e painel admin.
 
 ## Stack
 
-Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma · SQLite
+Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma · Supabase (Postgres)
 
 ## Configuração
 
@@ -24,7 +24,10 @@ Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma · SQLite
 ## Deploy na Vercel
 
 1. Importe o repositório na Vercel (framework: Next.js, sem build overrides).
-2. Configure as env vars de produção:
+2. No Supabase, crie um bucket **público** de Storage chamado `produtos`
+   (Storage → New bucket → name: `produtos` → marque **Public bucket**).
+   Sem esse bucket, os uploads de fotos pelo painel admin retornam 500.
+3. Configure as env vars de produção:
 
 | Env var | Como obter |
 |---|---|
@@ -37,12 +40,12 @@ Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma · SQLite
 > Configure o runtime Node.js do projeto de produção na Vercel para **Node 22**:
 > a dependência `@supabase/supabase-js@2.116.0` declara `engines.node >=22`.
 
-3. Aplique migrations (uma vez, da sua máquina, com a URL direta 5432):
+4. Aplique migrations (uma vez, da sua máquina, com a URL direta 5432):
    `npx prisma migrate deploy`
-4. Cadastre conteúdo (produtos/oficinas e fotos) pelo painel `/admin/login`.
+5. Cadastre conteúdo (produtos/oficinas e fotos) pelo painel `/admin/login`.
 
 ## Áreas
 
 - Vitrine pública: `/`, `/produtos`, `/encomendas`, `/oficinas`, `/sobre`, `/contato`, `/carrinho`
 - Admin: `/admin/login` (senha em `ADMIN_PASSWORD`)
-- Uploads: `public/uploads/`
+- Uploads: armazenados no Supabase Storage (bucket público `produtos`)
