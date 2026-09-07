@@ -46,11 +46,15 @@ model CustomOrder {
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  name      String
-  contact   String
-  items     String   // JSON array de [{slug,name,qty,unitPrice}] (SQLite não suporta Json)
-  total     Decimal
-  status    String   @default("recebido")
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  name          String
+  contact       String
+  items         String   // JSON array de [{slug,name,qty,unitPrice}] (SQLite não suporta Json)
+  total         Decimal
+  status        String   @default("recebido")
+  paymentMethod String?  // "whatsapp" | "mercadopago"
+  paymentStatus String?  // status bruto do Mercado Pago (approved, pending, rejected, ...)
+  preferenceId  String?  // id da preferência Checkout Pro no Mercado Pago
+  paymentId     String?  // id do pagamento no Mercado Pago
+  createdAt     DateTime @default(now())
 }
