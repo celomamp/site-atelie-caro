@@ -7,7 +7,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const record = buildOrderRecord(body.name, body.contact, body.items);
     const order = await prisma.order.create({
-      data: { ...record, items: JSON.stringify(record.items) },
+      data: {
+        ...record,
+        items: JSON.stringify(record.items),
+        paymentMethod: "whatsapp",
+      },
     });
     return NextResponse.json({ ok: true, id: order.id }, { status: 201 });
   } catch (e) {
