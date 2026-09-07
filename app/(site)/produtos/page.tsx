@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import SortSelect from "@/components/SortSelect";
+import { parseImages } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
@@ -11,15 +12,6 @@ const CATEGORIES = [
   { value: "decoracao", label: "Decoração" },
   { value: "vasos", label: "Vasos" },
 ];
-
-function parseImages(json: string): string[] {
-  try {
-    const parsed: unknown = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
 
 export default async function ProdutosPage({
   searchParams,

@@ -1,6 +1,7 @@
 // components/ProductCard.tsx
 import Link from "next/link";
 import { formatBRL } from "@/lib/cart";
+import CardGallery from "@/components/CardGallery";
 
 type Product = {
   slug: string;
@@ -16,16 +17,7 @@ export default function ProductCard({ product }: { product: Product }) {
       href={`/produtos/${product.slug}`}
       className="group overflow-hidden rounded-lg bg-white shadow-sm transition hover:shadow-md"
     >
-      <div className="aspect-square bg-cream">
-        {product.images[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="h-full w-full object-cover"
-          />
-        ) : null}
-      </div>
+      <CardGallery images={product.images} alt={product.name} />
       <div className="p-4">
         <h3 className="font-display text-lg">{product.name}</h3>
         <p className="mt-1 font-semibold text-magenta">{formatBRL(Number(product.price))}</p>
