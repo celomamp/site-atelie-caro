@@ -10,7 +10,7 @@ Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma · Supabase (Pos
 
 ## Configuração
 
-1. Copie `.env.example` para `.env` e preencha `ADMIN_PASSWORD`, `NEXT_PUBLIC_WHATSAPP`, `SESSION_SECRET`, etc. Use valores próprios — especialmente `SESSION_SECRET` (obrigatório em produção) e `ADMIN_PASSWORD`.
+1. Copie `.env.example` para `.env` e preencha `ADMIN_PASSWORD`, `NEXT_PUBLIC_WHATSAPP`, `SESSION_SECRET`, etc. Use valores próprios — especialmente `SESSION_SECRET` (obrigatório em produção) e `ADMIN_PASSWORD`. No ambiente local, `DIRECT_DATABASE_URL` pode ser igual à `DATABASE_URL` (o Prisma CLI a exige para `db push`/migrations).
 2. Instale e prepare o banco:
    ```bash
    npm install
@@ -65,6 +65,7 @@ Configuração:
 | Env var | Como obter |
 |---|---|
 | `DATABASE_URL` | Supabase → Project Settings → Database → Connection Pooling (porta **6543**), com `?pgbouncer=true&connection_limit=1` — **não** usar a URL direta 5432 |
+| `DIRECT_DATABASE_URL` | Supabase → Connection Pooling → modo **sessão** (porta **5432**, host `aws-0-<regiao>.pooler.supabase.com`, sem `pgbouncer=true`) — usada pelo Prisma CLI (migrations) |
 | `ADMIN_PASSWORD` | senha forte do painel admin |
 | `SESSION_SECRET` | `openssl rand -base64 32` (obrigatório, 32+ caracteres) |
 | `SUPABASE_URL` / `SUPABASE_SECRET_KEY` | Supabase → Settings → API (service role) |
@@ -76,8 +77,10 @@ Configuração:
 > Configure o runtime Node.js do projeto de produção na Vercel para **Node 22**:
 > a dependência `@supabase/supabase-js@2.116.0` declara `engines.node >=22`.
 
-4. Aplique migrations (uma vez, da sua máquina, com a URL direta 5432):
-   `npx prisma migrate deploy`
+4. Migrations rodam **no pipeline da Vercel**: o script `vercel-build`
+   (`scripts/vercel-build.sh`) aplica `prisma migrate deploy` antes do `next build`
+   em todo deploy de **produção** (previews pulam as migrations — fail-fast: se a
+   migration falhar, o deploy falha). Já aplicadas são puladas (idempotente).
 5. Cadastre conteúdo (produtos/oficinas e fotos) pelo painel `/admin/login`.
 
 ## Áreas

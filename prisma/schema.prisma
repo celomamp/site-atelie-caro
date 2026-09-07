@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")            // runtime: pooler transaction (6543)
+  directUrl = env("DIRECT_DATABASE_URL")     // migrations/CLI: sessão (5432) ou direta
 }
 
 model Product {

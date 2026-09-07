@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate",
+    "vercel-build": "bash scripts/vercel-build.sh",
     "lint": "next lint",
     "test": "jest",
     "db:push": "prisma db push",
