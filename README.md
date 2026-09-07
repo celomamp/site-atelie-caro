@@ -65,7 +65,7 @@ Configuração:
 | Env var | Como obter |
 |---|---|
 | `DATABASE_URL` | Supabase → Project Settings → Database → Connection Pooling (porta **6543**), com `?pgbouncer=true&connection_limit=1` — **não** usar a URL direta 5432 |
-| `DIRECT_DATABASE_URL` | Supabase → Connection Pooling → modo **sessão** (porta **5432**, host `aws-0-<regiao>.pooler.supabase.com`, sem `pgbouncer=true`) — usada pelo Prisma CLI (migrations) |
+| `DIRECT_DATABASE_URL` | Supabase → **Connect** → **Session pooler** (porta **5432**, host `aws-0-<regiao>.pooler.supabase.com`, usuário `postgres.<ref>`) — usada pelo Prisma CLI (migrations). **Não** usar a conexão direta `db.<ref>.supabase.co` na Vercel: é IPv6-only e o build falha com `P1001` |
 | `ADMIN_PASSWORD` | senha forte do painel admin |
 | `SESSION_SECRET` | `openssl rand -base64 32` (obrigatório, 32+ caracteres) |
 | `SUPABASE_URL` / `SUPABASE_SECRET_KEY` | Supabase → Settings → API (service role) |
