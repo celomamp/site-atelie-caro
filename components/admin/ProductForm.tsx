@@ -2,24 +2,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { parseImages } from "@/lib/images";
 
 type Props = {
   initial?: any;
   productId?: string;
 };
-
-function parseImages(raw?: unknown): string[] {
-  if (Array.isArray(raw)) return raw as string[];
-  if (typeof raw === "string") {
-    try {
-      const parsed: unknown = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-  return [];
-}
 
 export default function ProductForm({ initial, productId }: Props) {
   const router = useRouter();
@@ -42,23 +30,26 @@ export default function ProductForm({ initial, productId }: Props) {
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
     setUploading(true);
     setError("");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      if (!res.ok) {
-        setError("Não foi possível enviar a imagem. Verifique o formato e o tamanho.");
-        return;
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          setError(`Não foi possível enviar ${file.name}. Verifique o formato e o tamanho.`);
+          continue;
+        }
+        const data = await res.json();
+        if (data.ok) setImages((prev) => [...prev, data.url]);
+        else setError(`Não foi possível enviar ${file.name}.`);
       }
-      const data = await res.json();
-      if (data.ok) setImages((prev) => [...prev, data.url]);
-      else setError("Não foi possível enviar a imagem.");
     } catch {
-      setError("Erro de conexão ao enviar a imagem.");
+      setError("Erro de conexão ao enviar as imagens.");
     } finally {
       setUploading(false);
     }
@@ -109,7 +100,7 @@ export default function ProductForm({ initial, productId }: Props) {
           onChange={(e) => set("available", e.target.checked)} /> Disponível</label>
       </div>
       <div className="md:col-span-2">
-        <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
+        <input type="file" accept="image/*" multiple onChange={handleUpload} disabled={uploading} />
         {uploading && <p className="text-sm text-gray-500">Enviando...</p>}
         {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         {images.length > 0 && (

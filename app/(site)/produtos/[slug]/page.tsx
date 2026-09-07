@@ -2,18 +2,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatBRL } from "@/lib/cart";
+import { parseImages } from "@/lib/images";
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductGallery from "@/components/ProductGallery";
 
 export const dynamic = "force-dynamic";
-
-function parseImages(json: string): string[] {
-  try {
-    const parsed: unknown = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
 
 export default async function ProductDetailPage({
   params,
@@ -26,17 +19,12 @@ export default async function ProductDetailPage({
 
   if (!product || !product.available) notFound();
 
-  const image = parseImages(product.images)[0];
+  const images = parseImages(product.images);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="aspect-square overflow-hidden rounded-lg bg-cream">
-          {image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={image} alt={product.name} className="h-full w-full object-cover" />
-          )}
-        </div>
+        <ProductGallery images={images} alt={product.name} />
         <div>
           <h1 className="font-display text-4xl font-bold">{product.name}</h1>
           <p className="mt-2 text-2xl font-bold text-magenta">{formatBRL(Number(product.price))}</p>
@@ -50,7 +38,7 @@ export default async function ProductDetailPage({
                 slug={product.slug}
                 name={product.name}
                 price={Number(product.price)}
-                image={image}
+                image={images[0]}
               />
             </div>
           )}
