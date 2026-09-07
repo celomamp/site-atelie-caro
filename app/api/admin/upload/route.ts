@@ -1,22 +1,18 @@
 // app/api/admin/upload/route.ts
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-
-const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-
-const MAGIC_BYTES: Array<[number[], string[]]> = [
-  [[0xff, 0xd8, 0xff], [".jpg", ".jpeg"]],
-  [[0x89, 0x50, 0x4e, 0x47], [".png"]],
-  [[0x47, 0x49, 0x46, 0x38], [".gif"]],
-  [[0x52, 0x49, 0x46, 0x46], [".webp"]],
-];
-
-function matchesMagic(bytes: Buffer, signature: number[]): boolean {
-  if (bytes.length < signature.length) return false;
-  return signature.every((b, i) => bytes[i] === b);
-}
+import {
+  getSupabaseAdmin,
+  BUCKET_NAME,
+  MEDIA_PREFIX,
+  mediaPublicUrl,
+} from "@/lib/supabase";
+import {
+  ALLOWED_EXTENSIONS,
+  MAX_FILE_SIZE,
+  matchesMagic,
+  buildUniqueFilename,
+} from "@/lib/upload-validators";
 
 export async function POST(req: Request) {
   try {
@@ -31,16 +27,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false }, { status: 413 });
     }
     const bytes = Buffer.from(await file.arrayBuffer());
-    const magic = MAGIC_BYTES.find(([, exts]) => exts.includes(ext));
-    if (magic && !matchesMagic(bytes, magic[0])) {
+    if (!matchesMagic(bytes, ext)) {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
-    const random = Math.random().toString(36).slice(2, 8);
-    const filename = `${Date.now()}-${random}${ext}`;
-    const dir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(dir, { recursive: true });
-    await writeFile(path.join(dir, filename), bytes);
-    return NextResponse.json({ ok: true, url: `/uploads/${filename}` });
+    const filename = buildUniqueFilename(ext);
+    const client = getSupabaseAdmin();
+    const { error } = await client.storage
+      .from(BUCKET_NAME)
+      .upload(`${MEDIA_PREFIX}${filename}`, bytes, { contentType: file.type });
+    if (error) {
+      console.error("supabase upload error:", error);
+      return NextResponse.json({ ok: false }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, url: mediaPublicUrl(filename) });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ ok: false }, { status: 500 });
