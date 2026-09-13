@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         ...(categories
           ? {
               categories: {
-                set: (Array.isArray(categories) ? categories : []).map((id: string) => ({
+                connect: (Array.isArray(categories) ? categories : []).map((id: string) => ({
                   id,
                 })),
               },
