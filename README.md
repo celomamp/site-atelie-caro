@@ -54,6 +54,30 @@ Configuração:
 5. Para produção, troque o access token pelo de produção e conclua a homologação
    no painel ("Subir em produção").
 
+## Frete — Melhor Envio + retirada
+
+O carrinho oferece **envio** (cotação real via Melhor Envio) ou **retirada
+em Campinas** (grátis). No modo envio, o cliente informa o endereço completo
+e escolhe o serviço (PAC/SEDEX/Jadlog); o frete é somado ao total pago no
+Mercado Pago (`shipments.cost`). Se a API estiver fora do ar, o pedido pode
+ser concluído como **frete a combinar**. A etiqueta é comprada manualmente no
+painel do Melhor Envio a partir dos dados do pedido em `/admin/pedidos`.
+
+Configuração:
+
+1. Crie uma conta no [Melhor Envio](https://melhorenvio.com.br) e preencha o
+   endereço de origem (Campinas) — o CEP de origem é a base de toda cotação.
+2. Em Integrações, crie um aplicativo e gere o **token de produção**
+   (nunca o de sandbox para valores reais). Para testes locais, use o
+   [sandbox](https://sandbox.melhorenvio.com.br) (só Correios/Jadlog).
+3. Defina no `.env`:
+   - `MELHOR_ENVIO_TOKEN` — token da API (server-only, nunca expor no client).
+   - `MELHOR_ENVIO_ORIGEM_CEP` — CEP de origem em Campinas, só dígitos
+     (ex.: `13083000`).
+   - `MELHOR_ENVIO_AMBIENTE` — `sandbox` para testes, `production` para real.
+4. Cada produto precisa de peso (kg) e dimensões (cm) — cadastrados no admin
+   de produtos (default: caixa 30x20x20cm / 2kg).
+
 ## Deploy na Vercel
 
 1. Importe o repositório na Vercel (framework: Next.js, sem build overrides).
@@ -73,6 +97,9 @@ Configuração:
 | `MERCADO_PAGO_ACCESS_TOKEN` | Suas Integrações → Detalhes da aplicação → Credenciais de produção |
 | `MERCADO_PAGO_WEBHOOK_SECRET` | Suas Integrações → Webhooks → Chave secreta (valida a assinatura do webhook) |
 | `NEXT_PUBLIC_APP_URL` | URL pública do site (ex.: `https://atelie.com`) |
+| `MELHOR_ENVIO_TOKEN` | Melhor Envio → Integrações → token do aplicativo (produção para valores reais) |
+| `MELHOR_ENVIO_ORIGEM_CEP` | CEP de origem em Campinas, só dígitos (ex.: `13083000`) |
+| `MELHOR_ENVIO_AMBIENTE` | `sandbox` para testes, `production` para real |
 
 > Configure o runtime Node.js do projeto de produção na Vercel para **Node 22**:
 > a dependência `@supabase/supabase-js@2.116.0` declara `engines.node >=22`.
