@@ -18,6 +18,10 @@ model Product {
   stock       Int       @default(1)
   featured    Boolean   @default(false)
   available   Boolean   @default(true)
+  weight      Float     @default(2.0)
+  width       Float     @default(30)
+  height      Float     @default(20)
+  length      Float     @default(20)
   createdAt   DateTime  @default(now())
   categories  Category[]
 }
@@ -65,5 +69,18 @@ model Order {
   paymentStatus String?  // status bruto do Mercado Pago (approved, pending, rejected, ...)
   preferenceId  String?  // id da preferência Checkout Pro no Mercado Pago
   paymentId     String?  // id do pagamento no Mercado Pago
+  deliveryMethod    String   @default("envio")
+  addressEmail      String   @default("")
+  addressCep        String   @default("")
+  addressRua        String   @default("")
+  addressNumero     String   @default("")
+  addressCompl      String   @default("")
+  addressBairro     String   @default("")
+  addressCidade     String   @default("")
+  addressUf         String   @default("")
+  shippingServiceId String?
+  shippingServiceName String?
+  shippingPrice     Decimal?
+  shippingEta       Int?
   createdAt     DateTime @default(now())
 }
