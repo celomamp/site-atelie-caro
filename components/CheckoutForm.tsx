@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "./CartContext";
 import { buildWhatsAppOrderMessage, whatsappLink } from "@/lib/whatsapp";
 import { formatBRL } from "@/lib/cart";
+import { maskCep, maskPhone } from "@/lib/masks";
 import type { DeliveryMethod, ShippingOption } from "@/lib/shipping";
 
 export default function CheckoutForm() {
@@ -23,8 +24,11 @@ export default function CheckoutForm() {
   // Cotação retornou 200 ok com lista vazia e o usuário aceitou frete a combinar.
   const [combineFreight, setCombineFreight] = useState(false);
   const [quoting, setQuoting] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const cepAbort = useRef<AbortController | null>(null);
+  const lastCepLookup = useRef("");
 
   // CEP ou itens mudaram → cotação anterior inválida.
   const itemsKey = JSON.stringify(items.map((i) => ({ slug: i.slug, qty: i.qty })));
@@ -41,11 +45,17 @@ export default function CheckoutForm() {
       ? Math.round((total + selected.price) * 100) / 100
       : total;
 
-  async function handleCepBlur() {
-    const digits = cep.replace(/\D/g, "");
-    if (digits.length !== 8) return;
+  async function fetchAddress(digits: string) {
+    if (digits.length !== 8 || lastCepLookup.current === digits) return;
+    lastCepLookup.current = digits;
+    cepAbort.current?.abort();
+    const ctrl = new AbortController();
+    cepAbort.current = ctrl;
+    setCepLoading(true);
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`, {
+        signal: ctrl.signal,
+      });
       const data = await res.json().catch(() => ({}));
       if (data.erro) return;
       if (typeof data.logradouro === "string" && data.logradouro) setRua(data.logradouro);
@@ -53,8 +63,32 @@ export default function CheckoutForm() {
       if (typeof data.localidade === "string" && data.localidade) setCidade(data.localidade);
       if (typeof data.uf === "string" && data.uf) setUf(data.uf);
     } catch {
-      // ViaCEP indisponível: usuário preenche manualmente.
+      // Abort ou ViaCEP indisponível: usuário preenche manualmente.
+    } finally {
+      if (cepAbort.current === ctrl) {
+        cepAbort.current = null;
+        setCepLoading(false);
+      }
     }
+  }
+
+  function handleCepChange(value: string) {
+    const masked = maskCep(value);
+    setCep(masked);
+    const digits = masked.replace(/\D/g, "");
+    if (digits.length === 8) void fetchAddress(digits);
+    else {
+      lastCepLookup.current = "";
+      cepAbort.current?.abort();
+      cepAbort.current = null;
+      setCepLoading(false);
+    }
+  }
+
+  async function handleCepBlur() {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    await fetchAddress(digits);
   }
 
   async function handleQuote() {
@@ -236,7 +270,7 @@ export default function CheckoutForm() {
             className={inputCls}
             placeholder="WhatsApp (opcional)"
             value={contact}
-            onChange={(e) => setContact(e.target.value)}
+            onChange={(e) => setContact(maskPhone(e.target.value))}
           />
         </div>
 
@@ -292,9 +326,14 @@ export default function CheckoutForm() {
                   className={inputCls}
                   placeholder="13010-000"
                   value={cep}
-                  onChange={(e) => setCep(e.target.value)}
+                  onChange={(e) => handleCepChange(e.target.value)}
                   onBlur={handleCepBlur}
                 />
+                {cepLoading && (
+                  <p aria-live="polite" className="text-xs text-gray-500">
+                    Buscando endereço…
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-1">
                 <label htmlFor="checkout-numero" className="text-sm font-semibold">Número</label>
