@@ -58,6 +58,25 @@ export default async function AdminPedidosPage() {
                   <li key={i}>• {it.name} — {it.qty}x — {formatBRL(Number(it.unitPrice) * it.qty)}</li>
                 ))}
               </ul>
+              <div className="mt-2 border-t border-gray-100 pt-2 text-sm text-gray-600">
+                <p>
+                  Entrega:{" "}
+                  {o.deliveryMethod === "retirada"
+                    ? "Retirada em Campinas"
+                    : `${o.shippingServiceName ?? "Envio"} — ${o.shippingPrice != null ? formatBRL(Number(o.shippingPrice)) : "—"} — ${o.shippingEta != null ? `${o.shippingEta}d` : "—"}`}
+                </p>
+                {o.deliveryMethod !== "retirada" && (
+                  <p>
+                    {o.addressRua}, {o.addressNumero} - {o.addressBairro},{" "}
+                    {o.addressCidade}/{o.addressUf}, CEP {o.addressCep}
+                  </p>
+                )}
+                <p>
+                  Produtos: {formatBRL(o.shippingPrice != null ? Number(o.total) - Number(o.shippingPrice) : Number(o.total))}
+                  {" / "}Frete: {o.shippingPrice != null ? formatBRL(Number(o.shippingPrice)) : "—"}
+                  {" / "}Total: <span className="font-bold">{formatBRL(Number(o.total))}</span>
+                </p>
+              </div>
             </div>
           );
         })}

@@ -169,6 +169,11 @@ export default async function CheckoutRetornoPage({
             </ul>
             <p className="mt-3 border-t border-gray-100 pt-2 text-sm">
               Total: <span className="font-bold text-magenta">{formatBRL(Number(order.total))}</span>
+              {order.shippingPrice != null && (
+                <span className="block text-gray-500">
+                  (produtos {formatBRL(Number(order.total) - Number(order.shippingPrice))} + frete {formatBRL(Number(order.shippingPrice))})
+                </span>
+              )}
             </p>
           </div>
         )}
