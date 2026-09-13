@@ -1,9 +1,24 @@
 // lib/mercadopago.ts
 // Funções puras da integração Checkout Pro (Mercado Pago).
 // Sem I/O e sem SDK: a parte server-side (SDK + Prisma) fica em lib/checkout.ts.
+import { validateAddress, AddressInput, DeliveryMethod } from "./shipping";
 
 // Payload da preferência — estruturalmente compatível com o corpo de
 // Preference.create() do SDK (snake_case da API do Mercado Pago).
+export type ReceiverAddress = {
+  zip_code: string;
+  street_name: string;
+  street_number: string;
+  city_name: string;
+  state_name: string;
+};
+
+export type ShippingPref = {
+  cost: number;
+  pickup?: boolean;
+  receiverAddress?: ReceiverAddress;
+};
+
 export type PreferencePayload = {
   items: {
     id: string;
@@ -16,6 +31,13 @@ export type PreferencePayload = {
   external_reference: string;
   back_urls: { success: string; pending: string; failure: string };
   auto_return: "approved";
+  payer?: { name?: string; email?: string };
+  shipments?: {
+    cost: number;
+    mode?: string;
+    local_pickup?: boolean;
+    receiver_address?: ReceiverAddress;
+  };
 };
 
 // Status do Mercado Pago → status interno do pedido (Order.status)
@@ -56,10 +78,16 @@ export function buildPreferencePayload({
   orderId,
   items,
   baseUrl,
+  payerName,
+  payerEmail,
+  shipping,
 }: {
   orderId: string;
   items: PreferenceItemInput[];
   baseUrl: string;
+  payerName?: string;
+  payerEmail?: string;
+  shipping?: ShippingPref;
 }): PreferencePayload {
   return {
     items: items.map((i) => ({
@@ -73,21 +101,61 @@ export function buildPreferencePayload({
     external_reference: orderId,
     back_urls: buildBackUrls(baseUrl),
     auto_return: "approved",
+    ...(shipping
+      ? {
+          shipments: {
+            cost: shipping.cost,
+            ...(shipping.pickup
+              ? { local_pickup: true }
+              : {
+                  mode: "not_specified",
+                  ...(shipping.receiverAddress
+                    ? { receiver_address: shipping.receiverAddress }
+                    : {}),
+                }),
+          },
+        }
+      : {}),
+    ...(payerEmail || payerName
+      ? {
+          payer: {
+            ...(payerName ? { name: payerName } : {}),
+            ...(payerEmail ? { email: payerEmail } : {}),
+          },
+        }
+      : {}),
   };
 }
 
 export type CheckoutItemInput = { slug: string; qty: number };
 
+export type CheckoutInputOpts = {
+  deliveryMethod?: unknown;
+  address?: unknown;
+  email?: unknown;
+};
+
 export type CheckoutInputResult =
-  | { ok: true; name: string; contact: string; items: CheckoutItemInput[] }
+  | {
+      ok: true;
+      name: string;
+      contact: string;
+      items: CheckoutItemInput[];
+      deliveryMethod?: DeliveryMethod;
+      address?: AddressInput;
+      email?: string;
+    }
   | { ok: false; error: string };
 
 // Valida e normaliza o input do checkout. Preço nunca vem daqui — o servidor
 // busca sempre no banco por slug (lib/checkout.ts).
+// Sem `opts`: comportamento legado (só nome/contato/itens).
+// Com `opts`: valida também deliveryMethod + endereço via Task 1 (validateAddress).
 export function validateCheckoutInput(
   name: unknown,
   contact: unknown,
-  items: unknown
+  items: unknown,
+  opts?: CheckoutInputOpts
 ): CheckoutInputResult {
   const cleanName = typeof name === "string" ? name.trim() : "";
   if (!cleanName) return { ok: false, error: "Informe seu nome." };
@@ -107,11 +175,47 @@ export function validateCheckoutInput(
     merged.set(slug, (merged.get(slug) ?? 0) + qty);
   }
 
+  const normalizedItems = [...merged.entries()].map(([slug, qty]) => ({
+    slug,
+    qty,
+  }));
+
+  if (opts === undefined) {
+    return {
+      ok: true,
+      name: cleanName,
+      contact: cleanContact,
+      items: normalizedItems,
+    };
+  }
+
+  const methodRaw =
+    typeof opts.deliveryMethod === "string" ? opts.deliveryMethod : "";
+  if (methodRaw !== "envio" && methodRaw !== "retirada")
+    return { ok: false, error: "Informe a forma de entrega." };
+
+  const topEmail = typeof opts.email === "string" ? opts.email.trim() : "";
+  const rawAddress = (
+    opts.address !== null && typeof opts.address === "object"
+      ? opts.address
+      : {}
+  ) as Record<string, unknown>;
+  // Aceita o e-mail top-level como fallback para o endereço.
+  const addressWithEmail: Record<string, unknown> =
+    rawAddress.email || !topEmail
+      ? rawAddress
+      : { ...rawAddress, email: topEmail };
+  const addr = validateAddress(methodRaw, addressWithEmail);
+  if (!addr.ok) return { ok: false, error: addr.error };
+
   return {
     ok: true,
     name: cleanName,
     contact: cleanContact,
-    items: [...merged.entries()].map(([slug, qty]) => ({ slug, qty })),
+    items: normalizedItems,
+    deliveryMethod: methodRaw,
+    address: addr.address,
+    email: topEmail || addr.address.email,
   };
 }
 

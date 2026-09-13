@@ -10,8 +10,14 @@ import {
   resolveBaseUrl,
   validateCheckoutInput,
   PreferenceItemInput,
+  ReceiverAddress,
 } from "@/lib/mercadopago";
 import { parseOrderItems } from "@/lib/orders";
+import {
+  getShippingOptions,
+  ShippingQuoteError,
+  toMeProduct,
+} from "@/lib/shipping-quote";
 
 // Erro com mensagem amigável para o cliente (vira 400 na rota).
 export class CheckoutError extends Error {}
@@ -31,21 +37,56 @@ export function getBaseUrl(req: Request): string {
   );
 }
 
+export type CheckoutShippingResult = {
+  price: number | null;
+  serviceId: string | null;
+  serviceName: string | null;
+  eta: number | null;
+};
+
 // Cria o pedido no banco e a preferência no Mercado Pago. Preços e estoque
 // vêm SEMPRE do banco — o client só informa slug e quantidade.
+// O frete é SEMPRE recalculado server-side via Melhor Envio (anti-adulteração):
+// se a cotação falhar e nenhum serviceId foi enviado, o pedido segue como
+// "frete a combinar" (shippingPrice null) sem travar a venda.
 export async function createMercadoPagoCheckout({
   name,
   contact,
+  email,
+  deliveryMethod,
+  address,
+  serviceId,
   items,
   baseUrl,
 }: {
   name: unknown;
   contact: unknown;
+  email?: unknown;
+  deliveryMethod?: unknown;
+  address?: unknown;
+  serviceId?: unknown;
   items: unknown;
   baseUrl: string;
-}): Promise<{ orderId: string; preferenceId: string; initPoint: string }> {
-  const input = validateCheckoutInput(name, contact, items);
+}): Promise<{
+  orderId: string;
+  preferenceId: string;
+  initPoint: string;
+  total: number;
+  shipping: CheckoutShippingResult;
+}> {
+  const hasDelivery = deliveryMethod === "envio" || deliveryMethod === "retirada";
+  const input = hasDelivery
+    ? validateCheckoutInput(name, contact, items, {
+        deliveryMethod,
+        address,
+        email,
+      })
+    : validateCheckoutInput(name, contact, items);
   if (!input.ok) throw new CheckoutError(input.error);
+
+  const method = input.deliveryMethod;
+  const addr = input.address;
+  const payerEmail = input.email || (typeof email === "string" ? email.trim() : "");
 
   const products = await prisma.product.findMany({
     where: { slug: { in: input.items.map((i) => i.slug) }, available: true },
@@ -54,6 +95,7 @@ export async function createMercadoPagoCheckout({
 
   const orderItems: { slug: string; name: string; qty: number; unitPrice: number }[] = [];
   const preferenceItems: PreferenceItemInput[] = [];
+  const meProducts: Parameters<typeof getShippingOptions>[1] = [];
   for (const { slug, qty } of input.items) {
     const product = bySlug.get(slug);
     if (!product) throw new CheckoutError(`Produto indisponível: ${slug}`);
@@ -68,21 +110,87 @@ export async function createMercadoPagoCheckout({
       quantity: qty,
       pictureUrl: parseImages(product.images)[0],
     });
+    meProducts.push(toMeProduct(product as any, qty));
   }
   if (orderItems.length === 0) throw new CheckoutError("Seu carrinho está vazio.");
 
-  const total = orderItems.reduce((a, i) => a + i.unitPrice * i.qty, 0);
+  const productsTotal = orderItems.reduce((a, i) => a + i.unitPrice * i.qty, 0);
+
+  // Recalcula o frete server-side.
+  let shipping: CheckoutShippingResult = {
+    price: null,
+    serviceId: null,
+    serviceName: null,
+    eta: null,
+  };
+  if (method === "retirada") {
+    shipping = { price: 0, serviceId: null, serviceName: null, eta: null };
+  } else if (method === "envio" && addr) {
+    const wantedServiceId =
+      typeof serviceId === "string" && serviceId ? serviceId : null;
+    let options: Awaited<ReturnType<typeof getShippingOptions>> | null = null;
+    try {
+      options = await getShippingOptions(addr.cep, meProducts);
+    } catch (e) {
+      if (e instanceof ShippingQuoteError && !wantedServiceId) {
+        options = null; // frete a combinar
+      } else if (e instanceof ShippingQuoteError) {
+        throw new CheckoutError(e.message);
+      } else {
+        throw e;
+      }
+    }
+    if (options && wantedServiceId) {
+      const sel = options.find((o) => o.id === wantedServiceId);
+      if (!sel)
+        throw new CheckoutError("Serviço de frete inválido. Cote novamente.");
+      shipping = {
+        price: sel.price,
+        serviceId: sel.id,
+        serviceName: sel.name,
+        eta: sel.eta,
+      };
+    }
+    // Sem serviceId (ou com ME fora do ar): frete a combinar, sem travar a venda.
+  }
+
+  const total =
+    Math.round((productsTotal + (shipping.price ?? 0)) * 100) / 100;
   const order = await prisma.order.create({
     data: {
       name: input.name,
       contact: input.contact,
       items: JSON.stringify(orderItems),
-      total: Math.round(total * 100) / 100,
+      total,
       status: "aguardando_pagamento",
       paymentMethod: "mercadopago",
       paymentStatus: "pending",
+      deliveryMethod: method ?? "envio",
+      addressEmail: addr?.email ?? "",
+      addressCep: addr?.cep ?? "",
+      addressRua: addr?.rua ?? "",
+      addressNumero: addr?.numero ?? "",
+      addressCompl: addr?.compl ?? "",
+      addressBairro: addr?.bairro ?? "",
+      addressCidade: addr?.cidade ?? "",
+      addressUf: addr?.uf ?? "",
+      shippingServiceId: shipping.serviceId,
+      shippingServiceName: shipping.serviceName,
+      shippingPrice: shipping.price,
+      shippingEta: shipping.eta,
     },
   });
+
+  const receiverAddress: ReceiverAddress | undefined =
+    method === "envio" && addr && addr.cep
+      ? {
+          zip_code: addr.cep,
+          street_name: addr.rua,
+          street_number: addr.numero,
+          city_name: addr.cidade,
+          state_name: addr.uf,
+        }
+      : undefined;
 
   const preference = new Preference(mpClient());
   const result = await preference.create({
@@ -90,6 +198,18 @@ export async function createMercadoPagoCheckout({
       orderId: order.id,
       items: preferenceItems,
       baseUrl,
+      payerName: input.name,
+      ...(payerEmail ? { payerEmail } : {}),
+      ...(method === "retirada"
+        ? { shipping: { cost: 0, pickup: true } }
+        : shipping.price !== null
+          ? {
+              shipping: {
+                cost: shipping.price,
+                ...(receiverAddress ? { receiverAddress } : {}),
+              },
+            }
+          : {}),
     }),
     requestOptions: { idempotencyKey: order.id },
   });
@@ -101,7 +221,13 @@ export async function createMercadoPagoCheckout({
     data: { preferenceId: result.id },
   });
 
-  return { orderId: order.id, preferenceId: result.id, initPoint: result.init_point };
+  return {
+    orderId: order.id,
+    preferenceId: result.id,
+    initPoint: result.init_point,
+    total,
+    shipping,
+  };
 }
 
 export async function fetchMercadoPagoPayment(paymentId: string | number) {

@@ -9,6 +9,10 @@ export async function POST(req: Request) {
     const result = await createMercadoPagoCheckout({
       name: body.name,
       contact: body.contact,
+      email: body.email,
+      deliveryMethod: body.deliveryMethod,
+      address: body.address,
+      serviceId: body.serviceId,
       items: body.items,
       baseUrl: getBaseUrl(req),
     });

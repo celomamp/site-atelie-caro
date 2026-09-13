@@ -97,6 +97,20 @@ describe("buildPreferencePayload", () => {
   });
 });
 
+describe("checkout with shipping", () => {
+  it("builds preference with shipments cost and receiver address", () => {
+    const { buildPreferencePayload } = require("../mercadopago");
+    const p = buildPreferencePayload({ orderId: "o1", items: [{ id: "a", title: "A", unitPrice: 10, quantity: 1 }], baseUrl: "https://atelie.com", shipping: { cost: 25.35, receiverAddress: { zip_code: "13083000", street_name: "Rua X", street_number: "123", city_name: "Campinas", state_name: "SP" } } });
+    expect((p as any).shipments.cost).toBe(25.35);
+    expect((p as any).shipments.mode).toBe("not_specified");
+  });
+  it("builds pickup preference with local_pickup", () => {
+    const { buildPreferencePayload } = require("../mercadopago");
+    const p = buildPreferencePayload({ orderId: "o1", items: [{ id: "a", title: "A", unitPrice: 10, quantity: 1 }], baseUrl: "https://atelie.com", shipping: { cost: 0, pickup: true } });
+    expect((p as any).shipments.local_pickup).toBe(true);
+  });
+});
+
 describe("validateCheckoutInput", () => {
   it("normalizes valid input", () => {
     const result = validateCheckoutInput(" Ana ", "11 99999-9999", [
