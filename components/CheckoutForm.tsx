@@ -20,6 +20,8 @@ export default function CheckoutForm() {
   const [uf, setUf] = useState("");
   const [options, setOptions] = useState<ShippingOption[]>([]);
   const [serviceId, setServiceId] = useState("");
+  // Cotação retornou 200 ok com lista vazia e o usuário aceitou frete a combinar.
+  const [combineFreight, setCombineFreight] = useState(false);
   const [quoting, setQuoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,7 @@ export default function CheckoutForm() {
   useEffect(() => {
     setOptions([]);
     setServiceId("");
+    setCombineFreight(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cep, itemsKey]);
 
@@ -79,11 +82,25 @@ export default function CheckoutForm() {
       if (!res.ok || !data.ok) throw new Error(data.error || "Não foi possível cotar o frete.");
       setOptions(Array.isArray(data.options) ? data.options : []);
       setServiceId("");
-      if (!Array.isArray(data.options) || data.options.length === 0)
-        setError("Nenhuma opção de frete encontrada para este CEP.");
+      if (!Array.isArray(data.options) || data.options.length === 0) {
+        // Lista vazia (200 ok): oferece o mesmo caminho frete-a-combinar do
+        // checkout — sem auto-submit, o usuário confirma e depois clica Pagar.
+        const ok = confirm(
+          "Nenhuma opção de frete encontrada para este CEP. Deseja continuar com frete a combinar?"
+        );
+        if (ok) {
+          setCombineFreight(true);
+        } else {
+          setCombineFreight(false);
+          setError("Nenhuma opção de frete encontrada para este CEP.");
+        }
+      } else {
+        setCombineFreight(false);
+      }
     } catch (e) {
       setOptions([]);
       setServiceId("");
+      setCombineFreight(false);
       setError(e instanceof Error ? e.message : "Não foi possível cotar o frete.");
     } finally {
       setQuoting(false);
@@ -152,7 +169,7 @@ export default function CheckoutForm() {
       setError("Informe seu nome para continuar.");
       return;
     }
-    if (deliveryMethod === "envio" && !serviceId) {
+    if (deliveryMethod === "envio" && !serviceId && !combineFreight) {
       setError("Cote o frete e escolha uma opção de entrega.");
       return;
     }

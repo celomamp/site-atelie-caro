@@ -1,7 +1,7 @@
 // app/api/checkout/mercadopago/route.ts
 // Cria o pedido + preferência e devolve o init_point do Checkout Pro.
 import { NextResponse } from "next/server";
-import { CheckoutError, createMercadoPagoCheckout, getBaseUrl } from "@/lib/checkout";
+import { CheckoutError, createMercadoPagoCheckout, FreightCheckoutError, getBaseUrl } from "@/lib/checkout";
 
 export async function POST(req: Request) {
   try {
@@ -18,6 +18,8 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ ok: true, ...result }, { status: 201 });
   } catch (e) {
+    if (e instanceof FreightCheckoutError)
+      return NextResponse.json({ ok: false, error: e.message }, { status: 502 });
     if (e instanceof CheckoutError)
       return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
     console.error(e);

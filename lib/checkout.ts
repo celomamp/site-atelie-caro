@@ -22,6 +22,9 @@ import {
 // Erro com mensagem amigável para o cliente (vira 400 na rota).
 export class CheckoutError extends Error {}
 
+// Erro derivado do frete (vira 502 na rota; o client oferece frete a combinar).
+export class FreightCheckoutError extends CheckoutError {}
+
 function mpClient(): MercadoPagoConfig {
   const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
   if (!accessToken) {
@@ -74,14 +77,13 @@ export async function createMercadoPagoCheckout({
   total: number;
   shipping: CheckoutShippingResult;
 }> {
-  const hasDelivery = deliveryMethod === "envio" || deliveryMethod === "retirada";
-  const input = hasDelivery
-    ? validateCheckoutInput(name, contact, items, {
-        deliveryMethod,
-        address,
-        email,
-      })
-    : validateCheckoutInput(name, contact, items);
+  // deliveryMethod é obrigatório — sem fallback legado: direto na API sem
+  // o enum geraria pedido "envio" sem endereço.
+  const input = validateCheckoutInput(name, contact, items, {
+    deliveryMethod,
+    address,
+    email,
+  });
   if (!input.ok) throw new CheckoutError(input.error);
 
   const method = input.deliveryMethod;
@@ -135,7 +137,7 @@ export async function createMercadoPagoCheckout({
       if (e instanceof ShippingQuoteError && !wantedServiceId) {
         options = null; // frete a combinar
       } else if (e instanceof ShippingQuoteError) {
-        throw new CheckoutError(e.message);
+        throw new FreightCheckoutError(e.message);
       } else {
         throw e;
       }
@@ -143,7 +145,7 @@ export async function createMercadoPagoCheckout({
     if (options && wantedServiceId) {
       const sel = options.find((o) => o.id === wantedServiceId);
       if (!sel)
-        throw new CheckoutError("Serviço de frete inválido. Cote novamente.");
+        throw new FreightCheckoutError("Serviço de frete inválido. Cote novamente.");
       shipping = {
         price: sel.price,
         serviceId: sel.id,
@@ -165,7 +167,7 @@ export async function createMercadoPagoCheckout({
       status: "aguardando_pagamento",
       paymentMethod: "mercadopago",
       paymentStatus: "pending",
-      deliveryMethod: method ?? "envio",
+      deliveryMethod: method,
       addressEmail: addr?.email ?? "",
       addressCep: addr?.cep ?? "",
       addressRua: addr?.rua ?? "",
