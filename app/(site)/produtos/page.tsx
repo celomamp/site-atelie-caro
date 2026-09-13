@@ -7,12 +7,6 @@ import { parseImages } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
-const CATEGORIES = [
-  { value: "utensilios", label: "Utensílios" },
-  { value: "decoracao", label: "Decoração" },
-  { value: "vasos", label: "Vasos" },
-];
-
 export default async function ProdutosPage({
   searchParams,
 }: {
@@ -21,8 +15,14 @@ export default async function ProdutosPage({
   const cat = searchParams.categoria;
   const order = searchParams.ordenar;
 
+  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const selected = categories.find((c) => c.slug === cat);
+
   const products = await prisma.product.findMany({
-    where: { available: true, ...(cat ? { category: cat } : {}) },
+    where: {
+      available: true,
+      ...(selected ? { categories: { some: { id: selected.id } } } : {}),
+    },
     orderBy:
       order === "menor"
         ? { price: "asc" }
@@ -35,22 +35,24 @@ export default async function ProdutosPage({
     <div className="mx-auto max-w-6xl px-4 py-12">
       <h1 className="font-display text-4xl font-bold">Produtos</h1>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4">
-        <div className="flex flex-wrap gap-2">
-          <Link href="/produtos" className="rounded border border-cobalt px-3 py-1 text-sm">Todos</Link>
-          {CATEGORIES.map((c) => (
+      <div className="mt-6 flex items-center gap-4">
+        <div className="flex min-w-0 flex-1 flex-nowrap gap-2 overflow-x-auto [scrollbar-width:thin]">
+          <Link href="/produtos" className="shrink-0 whitespace-nowrap rounded border border-cobalt px-3 py-1 text-sm">Todos</Link>
+          {categories.map((c) => (
             <Link
-              key={c.value}
-              href={`/produtos?categoria=${c.value}`}
-              className={`rounded border px-3 py-1 text-sm ${
-                cat === c.value ? "bg-cobalt text-white" : "border-cobalt"
+              key={c.id}
+              href={`/produtos?categoria=${c.slug}`}
+              className={`shrink-0 whitespace-nowrap rounded border px-3 py-1 text-sm ${
+                selected?.id === c.id ? "bg-cobalt text-white" : "border-cobalt"
               }`}
             >
-              {c.label}
+              {c.name}
             </Link>
           ))}
         </div>
-        <SortSelect categoria={cat} ordenar={order} />
+        <div className="shrink-0">
+          <SortSelect categoria={cat} ordenar={order} />
+        </div>
       </div>
 
       {products.length === 0 ? (

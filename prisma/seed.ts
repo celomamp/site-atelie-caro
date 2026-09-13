@@ -4,6 +4,24 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  const utensilios = await prisma.category.upsert({
+    where: { slug: "utensilios" },
+    update: {},
+    create: { name: "Utensílios", slug: "utensilios" },
+  });
+
+  const decoracao = await prisma.category.upsert({
+    where: { slug: "decoracao" },
+    update: {},
+    create: { name: "Decoração", slug: "decoracao" },
+  });
+
+  await prisma.category.upsert({
+    where: { slug: "vasos" },
+    update: {},
+    create: { name: "Vasos", slug: "vasos" },
+  });
+
   await prisma.product.upsert({
     where: { slug: "xicara-de-ceramica" },
     update: {},
@@ -12,7 +30,7 @@ async function main() {
       name: "Xícara de Cerâmica",
       description: "Xícara artesanal esmaltada, feita à mão em alta temperatura.",
       price: 90,
-      category: "utensilios",
+      categories: { connect: [{ id: utensilios.id }] },
       images: JSON.stringify(["/uploads/xicara.jpg"]),
       stock: 5,
       featured: true,
@@ -27,7 +45,7 @@ async function main() {
       name: "Vaso Terracota",
       description: "Vaso em tom terracota com textura de barro.",
       price: 95,
-      category: "decoracao",
+      categories: { connect: [{ id: decoracao.id }] },
       images: JSON.stringify(["/uploads/vaso.jpg"]),
       stock: 3,
       featured: true,

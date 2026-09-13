@@ -9,17 +9,25 @@ datasource db {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  slug        String   @unique
+  id          String    @id @default(cuid())
+  slug        String    @unique
   name        String
   description String
   price       Decimal
-  category    String
-  images      String   // JSON array de paths (SQLite não suporta String[])
-  stock       Int      @default(1)
-  featured    Boolean  @default(false)
-  available   Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  images      String    // JSON array de paths (SQLite não suporta String[])
+  stock       Int       @default(1)
+  featured    Boolean   @default(false)
+  available   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  categories  Category[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  products  Product[]
 }
 
 model Workshop {

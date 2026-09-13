@@ -4,19 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseImages } from "@/lib/images";
 
+type ProductCategory = { id: string; name: string };
+
 type Props = {
   initial?: any;
   productId?: string;
+  categories: ProductCategory[];
 };
 
-export default function ProductForm({ initial, productId }: Props) {
+export default function ProductForm({ initial, productId, categories }: Props) {
   const router = useRouter();
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initial?.categories?.map((c: { id: string }) => c.id) ?? []
+  );
   const [form, setForm] = useState({
     name: initial?.name || "",
     slug: initial?.slug || "",
     description: initial?.description || "",
     price: initial ? String(initial.price) : "",
-    category: initial?.category || "utensilios",
     stock: initial ? String(initial.stock) : "1",
     featured: initial?.featured || false,
     available: initial?.available ?? true,
@@ -55,6 +60,12 @@ export default function ProductForm({ initial, productId }: Props) {
     }
   }
 
+  function toggleCategory(id: string) {
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -63,12 +74,13 @@ export default function ProductForm({ initial, productId }: Props) {
       const res = await fetch(url, {
         method: productId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock), images }),
+        body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock), images, categories: selectedCategories }),
       });
       if (!res.ok) {
         setError("Não foi possível salvar o produto. Verifique se o slug já existe ou os dados e tente novamente.");
         return;
       }
+      router.refresh();
       router.push("/admin/produtos");
     } catch {
       setError("Erro de conexão. Não foi possível salvar o produto.");
@@ -87,12 +99,24 @@ export default function ProductForm({ initial, productId }: Props) {
         onChange={(e) => set("price", e.target.value)} required />
       <input className="rounded border px-3 py-2" type="number" placeholder="Estoque" value={form.stock}
         onChange={(e) => set("stock", e.target.value)} />
-      <select className="rounded border px-3 py-2" value={form.category}
-        onChange={(e) => set("category", e.target.value)}>
-        <option value="utensilios">Utensílios</option>
-        <option value="decoracao">Decoração</option>
-        <option value="vasos">Vasos</option>
-      </select>
+      <div className="md:col-span-2">
+        <p className="mb-1 font-semibold">Categorias</p>
+        {categories.length > 0 ? (
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {categories.map((c) => (
+              <label key={c.id} className="flex items-center gap-2">
+                <input type="checkbox" checked={selectedCategories.includes(c.id)}
+                  onChange={() => toggleCategory(c.id)} /> {c.name}
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">Nenhuma categoria cadastrada. <a href="/admin/categorias/nova" className="text-cobalt">Criar categoria</a></p>
+        )}
+        {selectedCategories.length === 0 && categories.length > 0 && (
+          <p className="mt-1 text-sm text-gray-500">Nenhuma categoria selecionada — o produto ficará sem categoria.</p>
+        )}
+      </div>
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2"><input type="checkbox" checked={form.featured}
           onChange={(e) => set("featured", e.target.checked)} /> Destaque</label>

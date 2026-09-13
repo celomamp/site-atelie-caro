@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 const LINKS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/produtos", label: "Produtos" },
+  { href: "/admin/categorias", label: "Categorias" },
   { href: "/admin/oficinas", label: "Oficinas" },
   { href: "/admin/encomendas", label: "Encomendas" },
   { href: "/admin/pedidos", label: "Pedidos" },

@@ -5,9 +5,22 @@ import { prisma } from "@/lib/prisma";
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
+    const { categories, ...data } = body;
     const product = await prisma.product.update({
       where: { id: params.id },
-      data: { ...body, images: body.images !== undefined ? JSON.stringify(body.images) : undefined },
+      data: {
+        ...data,
+        images: body.images !== undefined ? JSON.stringify(body.images) : undefined,
+        ...(categories
+          ? {
+              categories: {
+                set: (Array.isArray(categories) ? categories : []).map((id: string) => ({
+                  id,
+                })),
+              },
+            }
+          : {}),
+      },
     });
     return NextResponse.json({ ok: true, product });
   } catch (e) {

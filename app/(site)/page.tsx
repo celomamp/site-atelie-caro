@@ -19,6 +19,7 @@ export default async function HomePage() {
     where: { featured: true, available: true },
     take: 4,
   });
+  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
   const products = featured.map((p) => ({
     slug: p.slug,
     name: p.name,
@@ -51,15 +52,19 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-8 grid gap-4 text-center md:grid-cols-3">
-          <Link href="/produtos?categoria=utensilios" className="rounded bg-blush p-6 hover:bg-pink-100">
-            <h3 className="font-display text-xl">Utensílios</h3>
-          </Link>
-          <Link href="/produtos?categoria=decoracao" className="rounded bg-blush p-6 hover:bg-pink-100">
-            <h3 className="font-display text-xl">Decoração</h3>
-          </Link>
+          {categories.slice(0, 2).map((c) => (
+            <Link key={c.id} href={`/produtos?categoria=${c.slug}`} className="rounded bg-blush p-6 hover:bg-pink-100">
+              <h3 className="font-display text-xl">{c.name}</h3>
+            </Link>
+          ))}
           <Link href="/encomendas" className="rounded bg-blush p-6 hover:bg-pink-100">
             <h3 className="font-display text-xl">Encomendas</h3>
           </Link>
+          {categories.length > 2 && (
+            <Link href="/produtos" className="rounded bg-blush p-6 hover:bg-pink-100 md:col-span-2">
+              <h3 className="font-display text-xl">Ver todas as categorias</h3>
+            </Link>
+          )}
         </div>
       </section>
 
