@@ -20,7 +20,7 @@ export default function Header() {
     <header className="bg-cobalt text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <Link href="/" className="font-display text-2xl font-bold">
-          Ateliê <span className="text-magenta">Carô</span>
+          Ateliê <span className="text-blush">Carô</span>
         </Link>
         <nav className="hidden items-center gap-6 md:flex">
           {NAV.map((n) => (

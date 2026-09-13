@@ -57,12 +57,15 @@ export default function CardGallery({ images, alt }: Props) {
                 key={img + i}
                 type="button"
                 aria-label={`Ir para foto ${i + 1}`}
+                aria-current={i === index ? "true" : undefined}
                 onClick={(e) => {
                   stop(e);
                   setIndex(i);
                 }}
-                className={`h-1.5 w-1.5 rounded-full transition ${i === index ? "bg-cobalt" : "bg-white/80 hover:bg-white"}`}
-              />
+                className="flex h-6 w-6 items-center justify-center"
+              >
+                <span className={`h-1.5 w-1.5 rounded-full transition ${i === index ? "bg-cobalt" : "bg-white/80 hover:bg-white"}`} />
+              </button>
             ))}
           </div>
         </>

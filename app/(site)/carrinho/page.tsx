@@ -30,11 +30,11 @@ export default function CarrinhoPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center rounded border border-gray-300">
-                  <button className="px-2" onClick={() => setQty(i.slug, i.qty - 1)}>−</button>
-                  <span className="w-6 text-center">{i.qty}</span>
-                  <button className="px-2" onClick={() => setQty(i.slug, i.qty + 1)}>+</button>
+                  <button type="button" aria-label={`Diminuir quantidade de ${i.name}`} className="min-h-[44px] min-w-[44px] px-3 py-2" onClick={() => setQty(i.slug, i.qty - 1)}>−</button>
+                  <span className="w-6 text-center" aria-live="polite" aria-label={`Quantidade: ${i.qty}`}>{i.qty}</span>
+                  <button type="button" aria-label={`Aumentar quantidade de ${i.name}`} className="min-h-[44px] min-w-[44px] px-3 py-2" onClick={() => setQty(i.slug, i.qty + 1)}>+</button>
                 </div>
-                <button onClick={() => removeItem(i.slug)} className="text-clay">Remover</button>
+                <button type="button" aria-label={`Remover ${i.name} do carrinho`} onClick={() => removeItem(i.slug)} className="min-h-[44px] min-w-[44px] text-clay underline-offset-2 hover:underline">Remover</button>
               </div>
             </div>
           ))}

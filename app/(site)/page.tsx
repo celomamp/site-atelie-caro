@@ -35,7 +35,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-20 text-center">
           <p className="font-cursive text-xl text-blush">Cerâmica artesanal</p>
           <h1 className="mt-2 font-display text-5xl font-bold md:text-6xl">
-            Peças únicas, <span className="text-magenta">feitas à mão</span>
+            Peças únicas, <span className="text-blush">feitas à mão</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl">
             Cerâmica de alta temperatura produzida artesanalmente no Ateliê Carô.

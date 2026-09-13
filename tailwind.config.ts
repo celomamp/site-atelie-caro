@@ -7,8 +7,8 @@ const config: Config = {
     extend: {
       colors: {
         cobalt: "#1B4FD8",
-        magenta: "#E8197B",
-        terracotta: "#C66A46",
+        magenta: "#C51568",
+        terracotta: "#A85A3B",
         clay: "#A8573C",
         cream: "#FAF6F0",
         blush: "#F6E7EF",

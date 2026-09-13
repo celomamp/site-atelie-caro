@@ -12,3 +12,8 @@
 body {
   @apply bg-cream text-ink font-body;
 }
+
+:focus-visible {
+  outline: 3px solid #1b4fd8;
+  outline-offset: 2px;
+}

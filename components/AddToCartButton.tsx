@@ -17,9 +17,9 @@ export default function AddToCartButton({ slug, name, price, image }: Props) {
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center rounded border border-gray-300">
-        <button className="px-3 py-2" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
-        <span className="w-8 text-center">{qty}</span>
-        <button className="px-3 py-2" onClick={() => setQty(qty + 1)}>+</button>
+        <button type="button" aria-label="Diminuir quantidade" className="min-h-[44px] min-w-[44px] px-3 py-2" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
+        <span className="w-8 text-center" aria-live="polite" aria-label={`Quantidade: ${qty}`}>{qty}</span>
+        <button type="button" aria-label="Aumentar quantidade" className="min-h-[44px] min-w-[44px] px-3 py-2" onClick={() => setQty(qty + 1)}>+</button>
       </div>
       <button
         className="rounded bg-cobalt px-6 py-3 font-semibold text-white hover:bg-blue-700"

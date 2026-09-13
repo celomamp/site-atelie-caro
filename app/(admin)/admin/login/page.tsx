@@ -27,10 +27,11 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-cream px-4">
       <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-lg bg-white p-8 shadow">
         <h1 className="font-display text-2xl font-bold text-center">Admin</h1>
-        <input type="password" placeholder="Senha" value={password}
+        <label htmlFor="admin-senha" className="sr-only">Senha</label>
+        <input id="admin-senha" name="senha" type="password" autoComplete="current-password" placeholder="Senha" value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="mt-6 w-full rounded border border-gray-300 px-3 py-2" />
-        {error && <p className="mt-2 text-sm text-clay">{error}</p>}
+        {error && <p role="alert" className="mt-2 text-sm text-clay">{error}</p>}
         <button className="mt-4 w-full rounded bg-cobalt py-2 font-semibold text-white">Entrar</button>
       </form>
     </div>

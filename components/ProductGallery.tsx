@@ -73,9 +73,12 @@ export default function ProductGallery({ images, alt }: Props) {
                 key={img + i}
                 type="button"
                 aria-label={`Ir para foto ${i + 1}`}
+                aria-current={i === index ? "true" : undefined}
                 onClick={() => setIndex(i)}
-                className={`h-2 w-2 rounded-full transition ${i === index ? "bg-cobalt" : "bg-white/80 hover:bg-white"}`}
-              />
+                className="flex h-6 w-6 items-center justify-center"
+              >
+                <span className={`h-2 w-2 rounded-full transition ${i === index ? "bg-cobalt" : "bg-white/80 hover:bg-white"}`} />
+              </button>
             ))}
           </div>
         </>

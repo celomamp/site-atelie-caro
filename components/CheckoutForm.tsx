@@ -57,25 +57,37 @@ export default function CheckoutForm() {
     <div className="rounded-lg bg-white p-6 shadow">
       <h2 className="font-display text-xl font-bold">Finalizar pedido</h2>
       <div className="mt-4 flex flex-col gap-3">
-        <input
-          className="rounded border border-gray-300 px-3 py-2"
-          placeholder="Seu nome"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          className="rounded border border-gray-300 px-3 py-2"
-          placeholder="WhatsApp (opcional)"
-          value={contact}
-          onChange={(e) => setContact(e.target.value)}
-        />
+        <div className="flex flex-col gap-1">
+          <label htmlFor="checkout-nome" className="text-sm font-semibold">Seu nome</label>
+          <input
+            id="checkout-nome"
+            name="nome"
+            autoComplete="name"
+            className="rounded border border-gray-300 px-3 py-2"
+            placeholder="Seu nome"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="checkout-contato" className="text-sm font-semibold">WhatsApp (opcional)</label>
+          <input
+            id="checkout-contato"
+            name="contato"
+            autoComplete="tel"
+            className="rounded border border-gray-300 px-3 py-2"
+            placeholder="WhatsApp (opcional)"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+          />
+        </div>
         <p className="text-sm text-gray-500">
           Total: <span className="font-bold text-magenta">{formatBRL(total)}</span>
         </p>
         <button
           onClick={handleMercadoPago}
           disabled={loading || items.length === 0}
-          className="rounded bg-[#009EE3] px-6 py-3 font-semibold text-white hover:bg-[#0079B2] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded bg-[#0079B2] px-6 py-3 font-semibold text-white hover:bg-[#006494] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Redirecionando…" : "Pagar com Mercado Pago"}
         </button>
@@ -83,7 +95,7 @@ export default function CheckoutForm() {
           Cartão, Pix, boleto ou conta Mercado Pago — você será redirecionado
           para concluir o pagamento com segurança.
         </p>
-        <div className="flex items-center justify-center gap-3 text-xs uppercase tracking-wide text-gray-400">
+        <div className="flex items-center justify-center gap-3 text-xs uppercase tracking-wide text-gray-500">
           <span className="h-px flex-1 bg-gray-200" />
           ou
           <span className="h-px flex-1 bg-gray-200" />
@@ -94,7 +106,7 @@ export default function CheckoutForm() {
         >
           Enviar pedido pelo WhatsApp
         </button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       </div>
     </div>
   );
