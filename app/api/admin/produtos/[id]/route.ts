@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
+    const num = (v: unknown, d: number) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : d; };
+    body.weight = num(body.weight, 2);
+    body.width = num(body.width, 30);
+    body.height = num(body.height, 20);
+    body.length = num(body.length, 20);
     const { categories, ...data } = body;
     const product = await prisma.product.update({
       where: { id: params.id },

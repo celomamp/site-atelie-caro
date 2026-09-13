@@ -23,6 +23,10 @@ export default function ProductForm({ initial, productId, categories }: Props) {
     description: initial?.description || "",
     price: initial ? String(initial.price) : "",
     stock: initial ? String(initial.stock) : "1",
+    weight: initial?.weight != null ? String(initial.weight) : "2",
+    width: initial?.width != null ? String(initial.width) : "30",
+    height: initial?.height != null ? String(initial.height) : "20",
+    length: initial?.length != null ? String(initial.length) : "20",
     featured: initial?.featured || false,
     available: initial?.available ?? true,
   });
@@ -74,7 +78,7 @@ export default function ProductForm({ initial, productId, categories }: Props) {
       const res = await fetch(url, {
         method: productId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock), images, categories: selectedCategories }),
+        body: JSON.stringify({ ...form, price: parseFloat(form.price), stock: parseInt(form.stock), weight: parseFloat((form as any).weight) || 2, width: parseFloat((form as any).width) || 30, height: parseFloat((form as any).height) || 20, length: parseFloat((form as any).length) || 20, images, categories: selectedCategories }),
       });
       if (!res.ok) {
         setError("Não foi possível salvar o produto. Verifique se o slug já existe ou os dados e tente novamente.");
@@ -99,6 +103,10 @@ export default function ProductForm({ initial, productId, categories }: Props) {
         onChange={(e) => set("price", e.target.value)} required />
       <input className="rounded border px-3 py-2" type="number" placeholder="Estoque" value={form.stock}
         onChange={(e) => set("stock", e.target.value)} />
+      <input className="rounded border px-3 py-2" type="number" step="0.01" min="0.1" placeholder="Peso (kg)" value={(form as any).weight} onChange={(e) => set("weight", e.target.value)} />
+      <input className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Largura (cm)" value={(form as any).width} onChange={(e) => set("width", e.target.value)} />
+      <input className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Altura (cm)" value={(form as any).height} onChange={(e) => set("height", e.target.value)} />
+      <input className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Comprimento (cm)" value={(form as any).length} onChange={(e) => set("length", e.target.value)} />
       <div className="md:col-span-2">
         <p className="mb-1 font-semibold">Categorias</p>
         {categories.length > 0 ? (
