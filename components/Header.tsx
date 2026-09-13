@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import CartButton from "./CartButton";
+import FavoritesButton from "./FavoritesButton";
 
 const NAV = [
   { href: "/", label: "Início" },
@@ -28,6 +29,7 @@ export default function Header() {
             </Link>
           ))}
           <CartButton />
+          <FavoritesButton />
         </nav>
         <button
           className="md:hidden"
@@ -47,6 +49,7 @@ export default function Header() {
             </Link>
           ))}
           <CartButton />
+          <FavoritesButton />
         </nav>
       )}
     </header>

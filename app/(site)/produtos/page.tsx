@@ -1,8 +1,8 @@
 // app/(site)/produtos/page.tsx
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import ProductCard from "@/components/ProductCard";
 import SortSelect from "@/components/SortSelect";
+import ProductsGrid from "@/components/ProductsGrid";
 import { parseImages } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function ProdutosPage({
   searchParams,
 }: {
-  searchParams: { categoria?: string; ordenar?: string };
+  searchParams: { categoria?: string; ordenar?: string; favoritos?: string };
 }) {
   const cat = searchParams.categoria;
   const order = searchParams.ordenar;
@@ -51,33 +51,24 @@ export default async function ProdutosPage({
           ))}
         </div>
         <div className="shrink-0">
-          <SortSelect categoria={cat} ordenar={order} />
+          <SortSelect categoria={cat} ordenar={order} favoritos={searchParams.favoritos} />
         </div>
       </div>
 
       {products.length === 0 ? (
         <p className="mt-10 text-gray-500">Nenhum produto encontrado.</p>
       ) : (
-        <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => (
-            <div key={p.slug} className="relative">
-              <ProductCard
-                product={{
-                  slug: p.slug,
-                  name: p.name,
-                  price: Number(p.price),
-                  images: parseImages(p.images),
-                  available: p.available,
-                }}
-              />
-              {p.stock <= 0 && (
-                <span className="absolute right-2 top-2 rounded bg-clay px-2 py-1 text-xs font-bold text-white">
-                  Esgotado
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+        <ProductsGrid
+          products={products.map((p) => ({
+            slug: p.slug,
+            name: p.name,
+            price: Number(p.price),
+            images: parseImages(p.images),
+            available: p.available,
+            stock: p.stock,
+          }))}
+          initialOnlyFavorites={searchParams.favoritos === "1"}
+        />
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatBRL } from "@/lib/cart";
 import { parseImages } from "@/lib/images";
 import AddToCartButton from "@/components/AddToCartButton";
+import FavoriteToggle from "@/components/FavoriteToggle";
 import ProductGallery from "@/components/ProductGallery";
 
 export const dynamic = "force-dynamic";
@@ -34,12 +35,15 @@ export default async function ProductDetailPage({
           ) : (
             <div className="mt-6">
               <p className="mb-2 text-sm text-gray-500">{product.stock} em estoque</p>
-              <AddToCartButton
-                slug={product.slug}
-                name={product.name}
-                price={Number(product.price)}
-                image={images[0]}
-              />
+              <div className="flex flex-wrap gap-3">
+                <AddToCartButton
+                  slug={product.slug}
+                  name={product.name}
+                  price={Number(product.price)}
+                  image={images[0]}
+                />
+                <FavoriteToggle slug={product.slug} name={product.name} />
+              </div>
             </div>
           )}
         </div>

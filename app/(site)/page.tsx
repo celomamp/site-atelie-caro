@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,10 @@ export default async function HomePage() {
         <h2 className="mb-6 font-display text-3xl font-bold">Destaques</h2>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {products.map((p) => (
-            <ProductCard key={p.slug} product={p} />
+            <div key={p.slug} className="relative">
+              <ProductCard product={p} />
+              <FavoriteButton slug={p.slug} />
+            </div>
           ))}
         </div>
       </section>
