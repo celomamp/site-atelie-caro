@@ -1,0 +1,20 @@
+services:
+  db:
+    image: docker.io/library/postgres:16-alpine
+    container_name: atelie-caro-db
+    environment:
+      POSTGRES_USER: atelie
+      POSTGRES_PASSWORD: atelie
+      POSTGRES_DB: atelie_caro
+    ports:
+      - "5432:5432"
+    volumes:
+      - atelie-caro-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atelie -d atelie_caro"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  atelie-caro-pgdata:

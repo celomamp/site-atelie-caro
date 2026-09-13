@@ -1,12 +1,7 @@
 // app/api/admin/upload/route.ts
 import { NextResponse } from "next/server";
 import path from "path";
-import {
-  getSupabaseAdmin,
-  BUCKET_NAME,
-  MEDIA_PREFIX,
-  mediaPublicUrl,
-} from "@/lib/supabase";
+import { getStorage } from "@/lib/storage";
 import {
   ALLOWED_EXTENSIONS,
   MAX_FILE_SIZE,
@@ -31,15 +26,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
     const filename = buildUniqueFilename(ext);
-    const client = getSupabaseAdmin();
-    const { error } = await client.storage
-      .from(BUCKET_NAME)
-      .upload(`${MEDIA_PREFIX}${filename}`, bytes, { contentType: file.type });
-    if (error) {
-      console.error("supabase upload error:", error);
-      return NextResponse.json({ ok: false }, { status: 500 });
-    }
-    return NextResponse.json({ ok: true, url: mediaPublicUrl(filename) });
+    const storage = getStorage();
+    const url = await storage.upload(filename, bytes, file.type);
+    return NextResponse.json({ ok: true, url });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ ok: false }, { status: 500 });

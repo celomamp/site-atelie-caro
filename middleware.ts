@@ -1,15 +1,21 @@
 // middleware.ts
-import { NextResponse } from "next/server";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { unsealData } from "iron-session";
 import { SESSION_COOKIE, SESSION_PASSWORD } from "@/lib/session-config";
 
-export async function middleware(req: Request) {
+export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  const session = await getIronSession<{ isAdmin: boolean }>(cookies(), {
-    password: SESSION_PASSWORD,
-    cookieName: SESSION_COOKIE,
-  });
+  let session: { isAdmin?: boolean } = {};
+  try {
+    const sealed = req.cookies.get(SESSION_COOKIE)?.value;
+    if (sealed) {
+      session = await unsealData<{ isAdmin?: boolean }>(sealed, {
+        password: SESSION_PASSWORD,
+      });
+    }
+  } catch {
+    session = {};
+  }
   const url = new URL(req.url);
   const isLogin =
     url.pathname.startsWith("/admin/login") ||
