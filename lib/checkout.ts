@@ -8,6 +8,7 @@ import {
   buildPreferencePayload,
   orderStatusFromPaymentStatus,
   resolveBaseUrl,
+  selectInitPoint,
   validateCheckoutInput,
   PreferenceItemInput,
   ReceiverAddress,
@@ -216,8 +217,14 @@ export async function createMercadoPagoCheckout({
     }),
     requestOptions: { idempotencyKey: order.id },
   });
-  if (!result.id || !result.init_point)
-    throw new Error("Resposta da preferência incompleta");
+  if (!result.id) throw new Error("Resposta da preferência incompleta");
+  const initPoint = selectInitPoint(
+    {
+      init_point: result.init_point,
+      sandbox_init_point: result.sandbox_init_point,
+    },
+    process.env.MERCADO_PAGO_ACCESS_TOKEN
+  );
 
   await prisma.order.update({
     where: { id: order.id },
@@ -227,7 +234,7 @@ export async function createMercadoPagoCheckout({
   return {
     orderId: order.id,
     preferenceId: result.id,
-    initPoint: result.init_point,
+    initPoint,
     total,
     shipping,
   };

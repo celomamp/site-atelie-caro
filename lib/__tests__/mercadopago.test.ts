@@ -1,7 +1,10 @@
 import {
   orderStatusFromPaymentStatus,
   buildBackUrls,
+  buildNotificationUrl,
   buildPreferencePayload,
+  isTestAccessToken,
+  selectInitPoint,
   validateCheckoutInput,
   parseWebhookNotification,
   resolveBaseUrl,
@@ -94,6 +97,43 @@ describe("buildPreferencePayload", () => {
     });
     expect(payload.auto_return).toBe("approved");
     expect(payload.back_urls).toEqual(buildBackUrls("https://atelie.com"));
+  });
+
+  it("includes notification_url pointing to the MP webhook", () => {
+    const payload = buildPreferencePayload({
+      orderId: "order123",
+      items,
+      baseUrl: "https://atelie.com/",
+    });
+    expect((payload as any).notification_url).toBe(
+      "https://atelie.com/api/mercadopago/webhook"
+    );
+  });
+
+  it("omits picture_url when it is not an absolute https url", () => {
+    const payload = buildPreferencePayload({
+      orderId: "o1",
+      items: [
+        { id: "a", title: "A", unitPrice: 10, quantity: 1, pictureUrl: "/uploads/a.jpg" },
+        { id: "b", title: "B", unitPrice: 10, quantity: 1, pictureUrl: "a.jpg" },
+        { id: "c", title: "C", unitPrice: 10, quantity: 1, pictureUrl: "http://img/c.jpg" },
+      ],
+      baseUrl: "https://atelie.com",
+    });
+    expect(payload.items[0]).not.toHaveProperty("picture_url");
+    expect(payload.items[1]).not.toHaveProperty("picture_url");
+    expect(payload.items[2]).not.toHaveProperty("picture_url");
+  });
+
+  it("keeps picture_url when it is an absolute https url", () => {
+    const payload = buildPreferencePayload({
+      orderId: "o1",
+      items: [
+        { id: "a", title: "A", unitPrice: 10, quantity: 1, pictureUrl: "https://img/a.jpg" },
+      ],
+      baseUrl: "https://atelie.com",
+    });
+    expect(payload.items[0].picture_url).toBe("https://img/a.jpg");
   });
 });
 
@@ -220,5 +260,63 @@ describe("resolveBaseUrl", () => {
 
   it("falls back to localhost when nothing is available", () => {
     expect(resolveBaseUrl(undefined, () => null)).toBe("http://localhost:3000");
+  });
+});
+
+describe("buildNotificationUrl", () => {
+  it("points to the MP webhook under the base url", () => {
+    expect(buildNotificationUrl("https://atelie.com")).toBe(
+      "https://atelie.com/api/mercadopago/webhook"
+    );
+  });
+
+  it("strips trailing slash from base url", () => {
+    expect(buildNotificationUrl("https://atelie.com/")).toBe(
+      "https://atelie.com/api/mercadopago/webhook"
+    );
+  });
+});
+
+describe("isTestAccessToken", () => {
+  it("detects TEST- tokens", () => {
+    expect(isTestAccessToken("TEST-123")).toBe(true);
+  });
+
+  it("rejects production tokens and empty values", () => {
+    expect(isTestAccessToken("APP_USR-123")).toBe(false);
+    expect(isTestAccessToken("")).toBe(false);
+    expect(isTestAccessToken(undefined)).toBe(false);
+  });
+});
+
+describe("selectInitPoint", () => {
+  it("uses sandbox_init_point for TEST tokens", () => {
+    expect(
+      selectInitPoint(
+        { init_point: "https://prod", sandbox_init_point: "https://sandbox" },
+        "TEST-123"
+      )
+    ).toBe("https://sandbox");
+  });
+
+  it("uses init_point for production tokens", () => {
+    expect(
+      selectInitPoint(
+        { init_point: "https://prod", sandbox_init_point: "https://sandbox" },
+        "APP_USR-123"
+      )
+    ).toBe("https://prod");
+  });
+
+  it("falls back to init_point when sandbox url is missing", () => {
+    expect(selectInitPoint({ init_point: "https://prod" }, "TEST-123")).toBe(
+      "https://prod"
+    );
+  });
+
+  it("throws when no usable init point exists", () => {
+    expect(() => selectInitPoint({}, "APP_USR-123")).toThrow(
+      "Resposta da preferência incompleta"
+    );
   });
 });

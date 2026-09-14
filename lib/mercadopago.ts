@@ -31,6 +31,7 @@ export type PreferencePayload = {
   external_reference: string;
   back_urls: { success: string; pending: string; failure: string };
   auto_return: "approved";
+  notification_url?: string;
   payer?: { name?: string; email?: string };
   shipments?: {
     cost: number;
@@ -66,6 +67,33 @@ export function buildBackUrls(baseUrl: string) {
   return { success: url, pending: url, failure: url };
 }
 
+export function buildNotificationUrl(baseUrl: string) {
+  return `${baseUrl.replace(/\/+$/, "")}/api/mercadopago/webhook`;
+}
+
+// Token de teste do Mercado Pago começa com TEST-. Preferência criada com
+// token de teste só pode ser paga por usuário de teste no sandbox.
+export function isTestAccessToken(token: string | undefined): boolean {
+  return typeof token === "string" && token.trim().startsWith("TEST-");
+}
+
+// Escolhe a URL de redirect correta: sandbox_init_point para token TEST-,
+// init_point nos demais casos. Lança erro se não houver URL utilizável.
+export function selectInitPoint(
+  result: { init_point?: string | null; sandbox_init_point?: string | null },
+  accessToken?: string
+): string {
+  if (isTestAccessToken(accessToken) && result.sandbox_init_point) {
+    return result.sandbox_init_point;
+  }
+  if (result.init_point) return result.init_point;
+  throw new Error("Resposta da preferência incompleta");
+}
+
+function isAbsoluteHttpsUrl(url: string): boolean {
+  return /^https:\/\//i.test(url.trim());
+}
+
 export type PreferenceItemInput = {
   id: string;
   title: string;
@@ -96,11 +124,14 @@ export function buildPreferencePayload({
       quantity: i.quantity,
       unit_price: i.unitPrice,
       currency_id: "BRL",
-      ...(i.pictureUrl ? { picture_url: i.pictureUrl } : {}),
+      ...(i.pictureUrl && isAbsoluteHttpsUrl(i.pictureUrl)
+        ? { picture_url: i.pictureUrl }
+        : {}),
     })),
     external_reference: orderId,
     back_urls: buildBackUrls(baseUrl),
     auto_return: "approved",
+    notification_url: buildNotificationUrl(baseUrl),
     ...(shipping
       ? {
           shipments: {
