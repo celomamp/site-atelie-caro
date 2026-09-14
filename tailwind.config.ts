@@ -6,13 +6,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cobalt: "#1B4FD8",
-        magenta: "#C51568",
-        terracotta: "#A85A3B",
+        cobalt: "#374492",
+        magenta: "#E4007C",
         clay: "#A8573C",
-        cream: "#FAF6F0",
-        blush: "#F6E7EF",
-        ink: "#2B2430",
+        cream: "#F8F8F8",
+        blush: "#F6DEEA",
+        mist: "#E3E5ED",
+        ink: "#1A1A1A",
       },
       fontFamily: {
         display: ["var(--font-caprasimo)", "serif"],

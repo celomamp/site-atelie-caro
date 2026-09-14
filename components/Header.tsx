@@ -26,7 +26,7 @@ export default function Header() {
             alt="Ateliê Carô"
             width={3992}
             height={2215}
-            className="h-10 w-auto"
+            className="h-20 w-auto"
             priority
           />
         </Link>

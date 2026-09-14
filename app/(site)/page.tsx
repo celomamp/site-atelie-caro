@@ -33,11 +33,11 @@ export default async function HomePage() {
     <div>
       <section className="bg-cobalt text-white">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center">
-          <p className="font-cursive text-xl text-blush">Cerâmica artesanal</p>
-          <h1 className="mt-2 font-display text-5xl font-bold md:text-6xl">
-            Peças únicas, <span className="text-blush">feitas à mão</span>
+          <p className="font-cursive text-xl text-white">Cerâmica artesanal</p>
+          <h1 className="mt-2 font-display text-5xl font-bold text-blush md:text-6xl">
+            Peças únicas, feitas à mão
           </h1>
-          <p className="mx-auto mt-4 max-w-xl">
+          <p className="mx-auto mt-4 max-w-xl md:whitespace-nowrap">
             Cerâmica de alta temperatura produzida artesanalmente no <span className="whitespace-nowrap">Ateliê Carô</span>.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -81,7 +81,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mt-12 bg-terracotta text-white">
+      <section className="mt-12 bg-cobalt text-white">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
           <h2 className="font-display text-3xl font-bold">Oficinas de Cerâmica</h2>
           <p className="mt-2">Venha colocar a mão na massa.</p>
