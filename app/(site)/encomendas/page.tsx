@@ -22,16 +22,16 @@ export default async function EncomendasPage({
     <div className="mx-auto max-w-4xl px-4 py-12">
       <h1 className="font-display text-4xl font-bold">Encomendas Personalizadas</h1>
       <p className="mt-4 leading-relaxed text-gray-700">
-        Quer uma peça única? Descreva o que você imagina e enviamos um orçamento pelo WhatsApp.
+        Quer uma peça única? Descreva o que você imagina, escolha uma peça de referência e envie fotos de inspiração. Um artesão entrará em contato com o orçamento.
       </p>
       <div className="mt-8 grid gap-6 md:grid-cols-3">
         <div className="rounded-lg bg-blush p-6">
           <h3 className="font-semibold">1. Descreva</h3>
-          <p className="mt-2 text-sm">Conte o tipo, tamanho, cores e uso da peça.</p>
+          <p className="mt-2 text-sm">Conte o tipo, tamanho, cores e uso da peça — e envie até 3 fotos de referência.</p>
         </div>
         <div className="rounded-lg bg-blush p-6">
           <h3 className="font-semibold">2. Receba o orçamento</h3>
-          <p className="mt-2 text-sm">Respondemos com preço e prazo pelo WhatsApp.</p>
+          <p className="mt-2 text-sm">Um artesão entra em contato com preço e prazo.</p>
         </div>
         <div className="rounded-lg bg-blush p-6">
           <h3 className="font-semibold">3. Aprove</h3>

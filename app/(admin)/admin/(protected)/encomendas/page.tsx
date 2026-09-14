@@ -7,11 +7,22 @@ type Encomenda = {
   name: string;
   contact: string;
   description: string;
+  images?: string | null;
   referenceSlug?: string | null;
   referenceName?: string | null;
   status: string;
   createdAt: string;
 };
+
+function parseOrderImages(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((u): u is string => typeof u === "string") : [];
+  } catch {
+    return [];
+  }
+}
 
 const STATUSES = ["nova", "em_orcamento", "confirmada", "cancelada"];
 
@@ -74,6 +85,16 @@ export default function AdminEncomendasPage() {
               </p>
             )}
             <p className="mt-2 text-sm">{o.description}</p>
+            {parseOrderImages(o.images).length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {parseOrderImages(o.images).map((url) => (
+                  <a key={url} href={url} target="_blank" rel="noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="Imagem de referência da encomenda" className="h-20 w-20 rounded object-cover" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {orders.length === 0 && <p className="text-gray-500">Nenhuma encomenda.</p>}

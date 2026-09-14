@@ -1,26 +1,22 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseEncomendaPayload } from "@/lib/encomendas";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const referenceSlug =
-      typeof body.referenceSlug === "string" && body.referenceSlug.trim()
-        ? body.referenceSlug.trim()
-        : typeof body.ref === "string" && body.ref.trim()
-          ? body.ref.trim()
-          : null;
-    const referenceName =
-      typeof body.referenceName === "string" && body.referenceName.trim()
-        ? body.referenceName.trim()
-        : null;
+    const parsed = parseEncomendaPayload(body);
+    if (!parsed.ok) {
+      return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
+    }
     const order = await prisma.customOrder.create({
       data: {
-        name: body.name,
-        contact: body.contact,
-        description: body.description,
-        referenceSlug,
-        referenceName,
+        name: parsed.data.name,
+        contact: parsed.data.contact,
+        description: parsed.data.description,
+        images: JSON.stringify(parsed.data.images),
+        referenceSlug: parsed.data.referenceSlug,
+        referenceName: parsed.data.referenceName,
       },
     });
     return NextResponse.json({ ok: true, id: order.id }, { status: 201 });

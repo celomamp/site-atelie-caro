@@ -1,0 +1,1 @@
+ALTER TABLE "CustomOrder" ADD COLUMN "images" TEXT NOT NULL DEFAULT '[]';

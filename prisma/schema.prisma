@@ -54,6 +54,7 @@ model CustomOrder {
   name          String
   contact       String
   description   String
+  images        String   @default("[]") // JSON array de URLs
   referenceSlug String?
   referenceName String?
   status        String   @default("nova")
