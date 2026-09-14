@@ -93,20 +93,47 @@ export default function ProductForm({ initial, productId, categories }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 rounded-lg bg-white p-6 shadow md:grid-cols-2">
-      <input className="rounded border px-3 py-2" placeholder="Nome" value={form.name}
-        onChange={(e) => set("name", e.target.value)} required />
-      <input className="rounded border px-3 py-2" placeholder="Slug (ex: xicara-azul)" value={form.slug}
-        onChange={(e) => set("slug", e.target.value)} required />
-      <textarea className="rounded border px-3 py-2 md:col-span-2" rows={3} placeholder="Descrição"
-        value={form.description} onChange={(e) => set("description", e.target.value)} required />
-      <input className="rounded border px-3 py-2" type="number" step="0.01" placeholder="Preço" value={form.price}
-        onChange={(e) => set("price", e.target.value)} required />
-      <input className="rounded border px-3 py-2" type="number" placeholder="Estoque" value={form.stock}
-        onChange={(e) => set("stock", e.target.value)} />
-      <input className="rounded border px-3 py-2" type="number" step="0.01" min="0.1" placeholder="Peso (kg)" value={(form as any).weight} onChange={(e) => set("weight", e.target.value)} />
-      <input className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Largura (cm)" value={(form as any).width} onChange={(e) => set("width", e.target.value)} />
-      <input className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Altura (cm)" value={(form as any).height} onChange={(e) => set("height", e.target.value)} />
-      <input className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Comprimento (cm)" value={(form as any).length} onChange={(e) => set("length", e.target.value)} />
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-nome" className="text-sm font-medium">Nome</label>
+        <input id="produto-nome" className="rounded border px-3 py-2" placeholder="Nome" value={form.name}
+          onChange={(e) => set("name", e.target.value)} required />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-slug" className="text-sm font-medium">Slug</label>
+        <input id="produto-slug" className="rounded border px-3 py-2" placeholder="Slug (ex: xicara-azul)" value={form.slug}
+          onChange={(e) => set("slug", e.target.value)} required />
+      </div>
+      <div className="flex flex-col gap-1 md:col-span-2">
+        <label htmlFor="produto-descricao" className="text-sm font-medium">Descrição</label>
+        <textarea id="produto-descricao" className="rounded border px-3 py-2 md:col-span-2" rows={3} placeholder="Descrição"
+          value={form.description} onChange={(e) => set("description", e.target.value)} required />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-preco" className="text-sm font-medium">Preço (R$)</label>
+        <input id="produto-preco" className="rounded border px-3 py-2" type="number" step="0.01" placeholder="Preço" value={form.price}
+          onChange={(e) => set("price", e.target.value)} required />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-estoque" className="text-sm font-medium">Estoque</label>
+        <input id="produto-estoque" className="rounded border px-3 py-2" type="number" placeholder="Estoque" value={form.stock}
+          onChange={(e) => set("stock", e.target.value)} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-peso" className="text-sm font-medium">Peso (kg)</label>
+        <input id="produto-peso" className="rounded border px-3 py-2" type="number" step="0.01" min="0.1" placeholder="Peso (kg)" value={(form as any).weight} onChange={(e) => set("weight", e.target.value)} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-largura" className="text-sm font-medium">Largura (cm)</label>
+        <input id="produto-largura" className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Largura (cm)" value={(form as any).width} onChange={(e) => set("width", e.target.value)} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-altura" className="text-sm font-medium">Altura (cm)</label>
+        <input id="produto-altura" className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Altura (cm)" value={(form as any).height} onChange={(e) => set("height", e.target.value)} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label htmlFor="produto-comprimento" className="text-sm font-medium">Comprimento (cm)</label>
+        <input id="produto-comprimento" className="rounded border px-3 py-2" type="number" step="0.1" min="1" placeholder="Comprimento (cm)" value={(form as any).length} onChange={(e) => set("length", e.target.value)} />
+      </div>
       <div className="md:col-span-2">
         <p className="mb-1 font-semibold">Categorias</p>
         {categories.length > 0 ? (
@@ -132,7 +159,8 @@ export default function ProductForm({ initial, productId, categories }: Props) {
           onChange={(e) => set("available", e.target.checked)} /> Disponível</label>
       </div>
       <div className="md:col-span-2">
-        <input type="file" accept="image/*" multiple onChange={handleUpload} disabled={uploading} />
+        <label htmlFor="produto-imagens" className="mb-1 block text-sm font-medium">Fotos do produto</label>
+        <input id="produto-imagens" type="file" accept="image/*" multiple onChange={handleUpload} disabled={uploading} />
         {uploading && <p className="text-sm text-gray-500">Enviando...</p>}
         {error && <p className="mt-2 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         {images.length > 0 && (
