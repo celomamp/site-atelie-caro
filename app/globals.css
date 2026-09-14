@@ -17,3 +17,10 @@ body {
   outline: 3px solid #1b4fd8;
   outline-offset: 2px;
 }
+
+/* Caprasimo só tem peso 400 e já é pesada por desenho.
+   Neutraliza font-bold/font-semibold sobre font-display para
+   evitar faux-bold sintético do navegador. */
+.font-display {
+  font-weight: 400;
+}
