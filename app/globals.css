@@ -4,9 +4,9 @@
 @tailwind utilities;
 
 :root {
-  --font-playfair: "Playfair Display", serif;
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-pacifico: "Pacifico", cursive;
+  --font-caprasimo: "Caprasimo", serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-marker: "Permanent Marker", cursive;
 }
 
 body {

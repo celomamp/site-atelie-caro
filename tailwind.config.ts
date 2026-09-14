@@ -15,9 +15,9 @@ const config: Config = {
         ink: "#2B2430",
       },
       fontFamily: {
-        display: ["var(--font-playfair)", "serif"],
-        body: ["var(--font-montserrat)", "sans-serif"],
-        cursive: ["var(--font-pacifico)", "cursive"],
+        display: ["var(--font-caprasimo)", "serif"],
+        body: ["var(--font-poppins)", "sans-serif"],
+        cursive: ["var(--font-marker)", "cursive"],
       },
     },
   },

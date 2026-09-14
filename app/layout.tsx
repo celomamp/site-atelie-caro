@@ -1,18 +1,23 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Playfair_Display, Montserrat, Pacifico } from "next/font/google";
+import { Caprasimo, Poppins, Permanent_Marker } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-});
-const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
-const pacifico = Pacifico({
+const caprasimo = Caprasimo({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-pacifico",
+  variable: "--font-caprasimo",
+});
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-poppins",
+});
+const permanentMarker = Permanent_Marker({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-marker",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className={`${playfair.variable} ${montserrat.variable} ${pacifico.variable}`}>
+      <body className={`${caprasimo.variable} ${poppins.variable} ${permanentMarker.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>
