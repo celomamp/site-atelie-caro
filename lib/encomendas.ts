@@ -83,6 +83,14 @@ function normalizeSearch(value: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+export function filterEncomendasByStatus<T extends { status: string }>(
+  orders: T[],
+  status: string
+): T[] {
+  if (status === "todas") return orders;
+  return orders.filter((o) => o.status === status);
+}
+
 export function filterReferenceProducts<T extends { name: string }>(
   products: T[],
   query: string
