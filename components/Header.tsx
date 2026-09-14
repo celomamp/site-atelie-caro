@@ -1,5 +1,6 @@
 // components/Header.tsx
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import CartButton from "./CartButton";
@@ -19,8 +20,15 @@ export default function Header() {
   return (
     <header className="bg-cobalt text-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <Link href="/" className="font-display text-2xl font-bold">
-          Ateliê <span className="text-magenta">Carô</span>
+        <Link href="/" aria-label="Ateliê Carô — início">
+          <Image
+            src="/logo-atelie-caro-stroke.png"
+            alt="Ateliê Carô"
+            width={3992}
+            height={2215}
+            className="h-10 w-auto"
+            priority
+          />
         </Link>
         <nav className="hidden items-center gap-6 md:flex">
           {NAV.map((n) => (
@@ -28,8 +36,8 @@ export default function Header() {
               {n.label}
             </Link>
           ))}
-          <CartButton />
           <FavoritesButton />
+          <CartButton />
         </nav>
         <button
           className="md:hidden"
@@ -48,8 +56,8 @@ export default function Header() {
               {n.label}
             </Link>
           ))}
-          <CartButton />
           <FavoritesButton />
+          <CartButton />
         </nav>
       )}
     </header>

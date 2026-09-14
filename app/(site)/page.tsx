@@ -38,7 +38,7 @@ export default async function HomePage() {
             Peças únicas, <span className="text-blush">feitas à mão</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl">
-            Cerâmica de alta temperatura produzida artesanalmente no Ateliê Carô.
+            Cerâmica de alta temperatura produzida artesanalmente no <span className="whitespace-nowrap">Ateliê Carô</span>.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link href="/produtos" className="rounded bg-magenta px-6 py-3 font-semibold">

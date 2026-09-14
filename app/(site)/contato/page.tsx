@@ -1,5 +1,6 @@
 import { SITE } from "@/lib/config";
 import { whatsappLink } from "@/lib/whatsapp";
+import ContatoForm from "@/components/ContatoForm";
 
 export default function ContatoPage() {
   return (
@@ -30,6 +31,9 @@ export default function ContatoPage() {
           <h3 className="font-semibold">Horários</h3>
           <p className="mt-2 text-sm">{SITE.hours}</p>
         </div>
+      </div>
+      <div className="mt-8">
+        <ContatoForm />
       </div>
     </div>
   );

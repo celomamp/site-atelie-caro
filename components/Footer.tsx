@@ -1,4 +1,5 @@
 // components/Footer.tsx
+import Image from "next/image";
 import { SITE } from "@/lib/config";
 
 export default function Footer() {
@@ -18,6 +19,15 @@ export default function Footer() {
           <p className="font-semibold">Localização</p>
           <p className="mt-2 text-sm">{SITE.address}</p>
           <p className="text-sm">{SITE.hours}</p>
+        </div>
+        <div className="flex items-start justify-start md:justify-end">
+          <Image
+            src="/logo-atelie-caro-mini-cor.png"
+            alt="Ateliê Carô"
+            width={421}
+            height={485}
+            className="h-20 w-auto"
+          />
         </div>
       </div>
       <div className="border-t border-white/20 py-4 text-center text-xs">
