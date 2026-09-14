@@ -78,6 +78,7 @@ export async function POST(req: Request) {
               addressRua: addr.address.rua,
               addressNumero: addr.address.numero,
               addressCompl: addr.address.compl,
+              addressRef: addr.address.ref,
               addressBairro: addr.address.bairro,
               addressCidade: addr.address.cidade,
               addressUf: addr.address.uf,

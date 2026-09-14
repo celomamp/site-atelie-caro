@@ -16,6 +16,7 @@ export default function CheckoutForm() {
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
   const [compl, setCompl] = useState("");
+  const [referencia, setReferencia] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [uf, setUf] = useState("");
@@ -146,7 +147,7 @@ export default function CheckoutForm() {
     return {
       deliveryMethod: "envio" as const,
       email,
-      address: { email, cep, rua, numero, compl, bairro, cidade, uf },
+      address: { email, cep, rua, numero, compl, ref: referencia, bairro, cidade, uf },
       ...(service ? { serviceId: service } : {}),
     };
   }
@@ -162,7 +163,7 @@ export default function CheckoutForm() {
     const message = buildWhatsAppOrderMessage(items, {
       deliveryMethod,
       ...(deliveryMethod === "envio"
-        ? { address: { email, cep, rua, numero, compl, bairro, cidade, uf }, shipping: shippingForWhatsApp() }
+        ? { address: { email, cep, rua, numero, compl, ref: referencia, bairro, cidade, uf }, shipping: shippingForWhatsApp() }
         : {}),
     });
     window.open(whatsappLink(message), "_blank");
@@ -296,7 +297,7 @@ export default function CheckoutForm() {
               checked={deliveryMethod === "retirada"}
               onChange={() => setDeliveryMethod("retirada")}
             />
-            Retirar em Campinas
+            Retirar no ateliê
           </label>
         </fieldset>
 
@@ -383,6 +384,17 @@ export default function CheckoutForm() {
                   onChange={(e) => setBairro(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="checkout-ref" className="text-sm font-semibold">Referência (opcional)</label>
+              <input
+                id="checkout-ref"
+                name="ref"
+                className={inputCls}
+                placeholder="Próx. à padaria, portão azul…"
+                value={referencia}
+                onChange={(e) => setReferencia(e.target.value)}
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1">

@@ -1,7 +1,7 @@
 // lib/shipping.ts
 export const DEFAULT_BOX = { weight: 2.0, width: 30, height: 20, length: 20 };
 export type DeliveryMethod = "envio" | "retirada";
-export type AddressInput = { email: string; cep: string; rua: string; numero: string; compl: string; bairro: string; cidade: string; uf: string };
+export type AddressInput = { email: string; cep: string; rua: string; numero: string; compl: string; ref: string; bairro: string; cidade: string; uf: string };
 export type ShippingOption = { id: string; name: string; price: number; eta: number };
 
 export function normalizeCep(v: unknown): string {
@@ -11,7 +11,7 @@ export function normalizeCep(v: unknown): string {
 }
 
 export function validateAddress(method: DeliveryMethod, a: unknown): { ok: true; address: AddressInput } | { ok: false; error: string } {
-  if (method === "retirada") return { ok: true, address: { email: "", cep: "", rua: "", numero: "", compl: "", bairro: "", cidade: "", uf: "" } };
+  if (method === "retirada") return { ok: true, address: { email: "", cep: "", rua: "", numero: "", compl: "", ref: "", bairro: "", cidade: "", uf: "" } };
   const o = (a ?? {}) as Record<string, unknown>;
   const email = typeof o.email === "string" ? o.email.trim() : "";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "Informe um e-mail válido." };
@@ -24,7 +24,7 @@ export function validateAddress(method: DeliveryMethod, a: unknown): { ok: true;
   if (!str("cidade")) return { ok: false, error: "Informe a cidade." };
   const uf = str("uf").toUpperCase();
   if (!/^[A-Z]{2}$/.test(uf)) return { ok: false, error: "Informe a UF com 2 letras." };
-  return { ok: true, address: { email, cep, rua: str("rua"), numero: str("numero"), compl: str("compl"), bairro: str("bairro"), cidade: str("cidade"), uf } };
+  return { ok: true, address: { email, cep, rua: str("rua"), numero: str("numero"), compl: str("compl"), ref: str("ref"), bairro: str("bairro"), cidade: str("cidade"), uf } };
 }
 
 export function meApiBase(env: string | undefined): string {

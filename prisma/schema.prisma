@@ -75,6 +75,7 @@ model Order {
   addressRua        String   @default("")
   addressNumero     String   @default("")
   addressCompl      String   @default("")
+  addressRef        String   @default("")
   addressBairro     String   @default("")
   addressCidade     String   @default("")
   addressUf         String   @default("")

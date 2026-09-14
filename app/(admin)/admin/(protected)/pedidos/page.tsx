@@ -62,13 +62,15 @@ export default async function AdminPedidosPage() {
                 <p>
                   Entrega:{" "}
                   {o.deliveryMethod === "retirada"
-                    ? "Retirada em Campinas"
+                    ? "Retirada no ateliê"
                     : `${o.shippingServiceName ?? "Envio"} — ${o.shippingPrice != null ? formatBRL(Number(o.shippingPrice)) : "—"} — ${o.shippingEta != null ? `${o.shippingEta}d` : "—"}`}
                 </p>
                 {o.deliveryMethod !== "retirada" && (
                   <p>
                     {o.addressRua}, {o.addressNumero} - {o.addressBairro},{" "}
                     {o.addressCidade}/{o.addressUf}, CEP {o.addressCep}
+                    {o.addressCompl ? ` — Compl: ${o.addressCompl}` : ""}
+                    {o.addressRef ? ` — Ref: ${o.addressRef}` : ""}
                   </p>
                 )}
                 <p>

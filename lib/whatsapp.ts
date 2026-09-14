@@ -31,7 +31,7 @@ export function buildWhatsAppOrderMessage(items: CartItem[], opts?: WhatsAppDeli
   ];
 
   if (method === "retirada") {
-    out.push("Entrega: Retirada em Campinas", "");
+    out.push("Entrega: Retirada no ateliê", "");
   } else if (method === "envio") {
     out.push("Entrega: Envio pelos Correios/Melhor Envio");
     const a = opts?.address;
@@ -41,6 +41,7 @@ export function buildWhatsAppOrderMessage(items: CartItem[], opts?: WhatsAppDeli
       const parts = [
         street,
         a.compl ? `Compl: ${a.compl}` : "",
+        a.ref ? `Ref: ${a.ref}` : "",
         a.bairro,
         city,
         a.cep ? `CEP ${a.cep}` : "",

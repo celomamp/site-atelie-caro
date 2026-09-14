@@ -1,0 +1,1 @@
+ALTER TABLE "Order" ADD COLUMN "addressRef" TEXT NOT NULL DEFAULT '';

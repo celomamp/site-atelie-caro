@@ -173,6 +173,7 @@ export async function createMercadoPagoCheckout({
       addressRua: addr?.rua ?? "",
       addressNumero: addr?.numero ?? "",
       addressCompl: addr?.compl ?? "",
+      addressRef: addr?.ref ?? "",
       addressBairro: addr?.bairro ?? "",
       addressCidade: addr?.cidade ?? "",
       addressUf: addr?.uf ?? "",

@@ -30,6 +30,18 @@ export default async function ProductDetailPage({
           <h1 className="font-display text-4xl font-bold">{product.name}</h1>
           <p className="mt-2 text-2xl font-bold text-magenta">{formatBRL(Number(product.price))}</p>
           <p className="mt-4 leading-relaxed text-gray-700">{product.description}</p>
+          <aside className="mt-6 rounded-lg border border-blush bg-blush/40 p-4">
+            <p className="font-display text-base">Feita à mão, única como você</p>
+            <p className="mt-1 text-sm leading-relaxed text-gray-600">
+              Cada peça do Ateliê Carô é modelada, esmaltada e queimada à mão,
+              uma a uma. Por isso, mesmo peças do mesmo lote podem apresentar
+              pequenas diferenças de tonalidade, textura, tamanho e peso — é
+              isso que torna cada peça única.
+            </p>
+            <p className="mt-2 text-xs text-gray-500">
+              As cores podem variar conforme a iluminação e a tela do seu dispositivo.
+            </p>
+          </aside>
           {product.stock <= 0 ? (
             <p className="mt-6 rounded bg-clay px-4 py-2 font-semibold text-white">Esgotado</p>
           ) : (
