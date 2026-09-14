@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="bg-cobalt text-white">
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 md:grid-cols-3">
         <div>
-          <p className="font-display text-xl font-bold">Ateliê <span className="text-blush">Carô</span></p>
+          <p className="font-display text-xl font-bold">Ateliê <span className="text-magenta">Carô</span></p>
           <p className="mt-2 text-sm">Cerâmica artesanal de alta temperatura.</p>
         </div>
         <div>
