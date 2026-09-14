@@ -50,12 +50,14 @@ model Workshop {
 }
 
 model CustomOrder {
-  id          String   @id @default(cuid())
-  name        String
-  contact     String
-  description String
-  status      String   @default("nova")
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  name          String
+  contact       String
+  description   String
+  referenceSlug String?
+  referenceName String?
+  status        String   @default("nova")
+  createdAt     DateTime @default(now())
 }
 
 model Order {

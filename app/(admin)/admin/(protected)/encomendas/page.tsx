@@ -7,6 +7,8 @@ type Encomenda = {
   name: string;
   contact: string;
   description: string;
+  referenceSlug?: string | null;
+  referenceName?: string | null;
   status: string;
   createdAt: string;
 };
@@ -54,6 +56,23 @@ export default function AdminEncomendasPage() {
               </select>
             </div>
             <p className="mt-1 text-sm text-gray-500">{o.contact}</p>
+            {(o.referenceSlug || o.referenceName) && (
+              <p className="mt-1 text-sm text-gray-600">
+                Referência:{" "}
+                {o.referenceSlug ? (
+                  <a
+                    href={`/produtos/${o.referenceSlug}`}
+                    className="text-cobalt underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {o.referenceName || o.referenceSlug}
+                  </a>
+                ) : (
+                  o.referenceName
+                )}
+              </p>
+            )}
             <p className="mt-2 text-sm">{o.description}</p>
           </div>
         ))}

@@ -1,7 +1,23 @@
 // app/(site)/encomendas/page.tsx
 import EncomendaForm from "@/components/EncomendaForm";
+import { prisma } from "@/lib/prisma";
+import { parseImages } from "@/lib/images";
 
-export default function EncomendasPage() {
+export const dynamic = "force-dynamic";
+
+export default async function EncomendasPage({
+  searchParams,
+}: {
+  searchParams?: { ref?: string };
+}) {
+  const products = await prisma.product.findMany({
+    where: { available: true },
+    orderBy: { name: "asc" },
+  });
+  const initialRefSlug =
+    typeof searchParams?.ref === "string" && searchParams.ref.trim()
+      ? searchParams.ref.trim()
+      : null;
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <h1 className="font-display text-4xl font-bold">Encomendas Personalizadas</h1>
@@ -23,7 +39,15 @@ export default function EncomendasPage() {
         </div>
       </div>
       <div className="mt-8">
-        <EncomendaForm />
+        <EncomendaForm
+          products={products.map((p) => ({
+            slug: p.slug,
+            name: p.name,
+            price: Number(p.price),
+            images: parseImages(p.images),
+          }))}
+          initialRefSlug={initialRefSlug}
+        />
       </div>
     </div>
   );

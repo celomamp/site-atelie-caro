@@ -2,31 +2,46 @@
 "use client";
 import { useState } from "react";
 import { whatsappLink } from "@/lib/whatsapp";
+import { buildEncomendaMessage, resolveReference } from "@/lib/encomendas";
+import ReferencePicker, { type ReferenceProduct } from "@/components/ReferencePicker";
 
-export default function EncomendaForm() {
+export default function EncomendaForm({
+  products = [],
+  initialRefSlug = null,
+}: {
+  products?: ReferenceProduct[];
+  initialRefSlug?: string | null;
+}) {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [desc, setDesc] = useState("");
+  const [refSlug, setRefSlug] = useState<string | null>(initialRefSlug);
 
   function handleSend() {
-    const message = [
-      "Olá, Ateliê Carô! Gostaria de solicitar um orçamento de encomenda:",
-      "",
-      `Nome: ${name}`,
-      `Contato: ${contact}`,
-      "",
-      "Descrição da peça:",
-      desc,
-    ].join("\n");
+    const reference = resolveReference(products, refSlug);
+    const message = buildEncomendaMessage({
+      name,
+      contact,
+      description: desc,
+      reference: reference
+        ? { slug: reference.slug, name: reference.name }
+        : null,
+    });
     window.open(whatsappLink(message), "_blank");
     if (name && contact && desc) {
       fetch("/api/encomendas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, contact, description: desc }),
+        body: JSON.stringify({
+          name,
+          contact,
+          description: desc,
+          referenceSlug: reference?.slug ?? null,
+          referenceName: reference?.name ?? null,
+        }),
       }).catch(() => {});
     }
-    setName(""); setContact(""); setDesc("");
+    setName(""); setContact(""); setDesc(""); setRefSlug(null);
   }
 
   return (
@@ -50,6 +65,7 @@ export default function EncomendaForm() {
           <textarea id="encomenda-desc" name="descricao" className="rounded border border-gray-300 px-3 py-2" rows={5} placeholder="Descreva a peça que você quer (tipo, tamanho, cores...)"
             value={desc} onChange={(e) => setDesc(e.target.value)} />
         </div>
+        <ReferencePicker products={products} value={refSlug} onChange={setRefSlug} />
         <button className="rounded bg-magenta px-6 py-3 font-semibold text-white hover:bg-pink-700">
           Solicitar orçamento pelo WhatsApp
         </button>

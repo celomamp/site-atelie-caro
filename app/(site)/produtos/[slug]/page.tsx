@@ -6,6 +6,8 @@ import { parseImages } from "@/lib/images";
 import AddToCartButton from "@/components/AddToCartButton";
 import FavoriteToggle from "@/components/FavoriteToggle";
 import ProductGallery from "@/components/ProductGallery";
+import Link from "next/link";
+import { encomendaLink } from "@/lib/encomendas";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +33,18 @@ export default async function ProductDetailPage({
           <p className="mt-2 text-2xl font-bold text-magenta">{formatBRL(Number(product.price))}</p>
           <p className="mt-4 leading-relaxed text-gray-700">{product.description}</p>
           {product.stock <= 0 ? (
-            <p className="mt-6 rounded bg-clay px-4 py-2 font-semibold text-white">Esgotado</p>
+            <div className="mt-6">
+              <p className="rounded bg-clay px-4 py-2 font-semibold text-white">Esgotado</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href={encomendaLink(product.slug)}
+                  className="rounded bg-magenta px-6 py-3 font-semibold text-white hover:bg-pink-700"
+                >
+                  Encomende uma igual
+                </Link>
+                <FavoriteToggle slug={product.slug} name={product.name} />
+              </div>
+            </div>
           ) : (
             <div className="mt-6">
               <p className="mb-2 text-sm text-gray-500">{product.stock} em estoque</p>
@@ -43,6 +56,12 @@ export default async function ProductDetailPage({
                   image={images[0]}
                 />
                 <FavoriteToggle slug={product.slug} name={product.name} />
+                <Link
+                  href={encomendaLink(product.slug)}
+                  className="rounded border border-magenta px-6 py-3 font-semibold text-magenta hover:bg-pink-50"
+                >
+                  Personalize esse item
+                </Link>
               </div>
             </div>
           )}

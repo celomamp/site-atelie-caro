@@ -7,7 +7,13 @@ export default function Footer() {
     <footer className="bg-cobalt text-white">
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 md:grid-cols-4">
         <div>
-          <p className="font-display text-xl font-bold">Ateliê <span className="text-magenta">Carô</span></p>
+          <Image
+            src="/logo-atelie-caro-stroke.png"
+            alt="Ateliê Carô"
+            width={3992}
+            height={2215}
+            className="h-16 w-auto"
+          />
           <p className="mt-2 text-sm">Cerâmica artesanal de alta temperatura.</p>
         </div>
         <div>
@@ -22,11 +28,11 @@ export default function Footer() {
         </div>
         <div className="flex items-start justify-start md:justify-end">
           <Image
-            src="/logo-atelie-caro-mini-cor.png"
+            src="/logo-atelie-caro-mini-cor-stroke.png"
             alt="Ateliê Carô"
-            width={421}
-            height={485}
-            className="h-20 w-auto"
+            width={461}
+            height={525}
+            className="h-10 w-auto"
           />
         </div>
       </div>

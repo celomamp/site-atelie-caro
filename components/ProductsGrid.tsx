@@ -5,6 +5,7 @@ import ProductCard from "./ProductCard";
 import FavoriteButton from "./FavoriteButton";
 import { useFavorites } from "./FavoritesContext";
 import { filterFavoriteSlugs } from "@/lib/favorites";
+import { encomendaLink } from "@/lib/encomendas";
 
 export type GridProduct = {
   slug: string;
@@ -69,7 +70,7 @@ export default function ProductsGrid({
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
           {visible.map((p) => (
-            <div key={p.slug} className="relative">
+            <div key={p.slug} className="relative flex flex-col">
               <ProductCard
                 product={{
                   slug: p.slug,
@@ -84,6 +85,14 @@ export default function ProductsGrid({
                 <span className="absolute right-2 top-2 rounded bg-clay px-2 py-1 text-xs font-bold text-white">
                   Esgotado
                 </span>
+              )}
+              {p.stock <= 0 && (
+                <Link
+                  href={encomendaLink(p.slug)}
+                  className="mt-2 rounded border border-magenta px-3 py-2 text-center text-sm font-semibold text-magenta hover:bg-pink-50"
+                >
+                  Encomende uma igual
+                </Link>
               )}
             </div>
           ))}
