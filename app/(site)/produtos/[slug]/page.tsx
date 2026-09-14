@@ -47,7 +47,8 @@ export default async function ProductDetailPage({
             </div>
           )}
           <aside className="mt-6 border-t border-gray-100 pt-4 text-xs leading-relaxed text-gray-500">
-            <p>
+            <p className="font-bold">Peças irmãs, não gêmeas.</p>
+            <p className="mt-1">
               Peça artesanal: cada peça do Ateliê Carô é modelada, esmaltada e
               queimada à mão, uma a uma. Por isso, mesmo peças do mesmo lote
               podem apresentar pequenas diferenças de tonalidade, textura,
