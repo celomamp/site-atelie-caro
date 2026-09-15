@@ -1,15 +1,22 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { guardAdminMutation } from "@/lib/admin-guard";
+import { categorySchema } from "@/lib/admin-schemas";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  const denied = await guardAdminMutation(req);
+  if (denied) return denied;
   try {
-    const body = await req.json();
-    if (!body.name?.trim() || !body.slug?.trim()) {
-      return NextResponse.json({ ok: false, error: "Nome e slug são obrigatórios." }, { status: 400 });
+    const parsed = categorySchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { ok: false, error: "Nome e slug são obrigatórios." },
+        { status: 400 }
+      );
     }
     const category = await prisma.category.update({
       where: { id: params.id },
-      data: { name: body.name.trim(), slug: body.slug.trim() },
+      data: parsed.data,
     });
     return NextResponse.json({ ok: true, category });
   } catch (e: any) {
@@ -22,7 +29,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const denied = await guardAdminMutation(req);
+  if (denied) return denied;
   try {
     const count = await prisma.category.findUnique({
       where: { id: params.id },

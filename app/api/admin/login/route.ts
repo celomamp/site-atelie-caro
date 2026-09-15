@@ -3,8 +3,11 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { hit, clientIp } from "@/lib/ratelimit";
 import { verifyAdminPassword } from "@/lib/admin-auth";
+import { requireSameOrigin } from "@/lib/admin-guard";
 
 export async function POST(req: Request) {
+  const crossSite = requireSameOrigin(req);
+  if (crossSite) return crossSite;
   const expectedPassword = process.env.ADMIN_PASSWORD;
   if (!expectedPassword) {
     console.error(

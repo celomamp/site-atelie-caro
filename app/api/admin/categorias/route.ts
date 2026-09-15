@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { guardAdminMutation, requireAdmin } from "@/lib/admin-guard";
+import { categorySchema } from "@/lib/admin-schemas";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
     include: { _count: { select: { products: true } } },
@@ -12,14 +16,17 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = await guardAdminMutation(req);
+  if (denied) return denied;
   try {
-    const body = await req.json();
-    if (!body.name?.trim() || !body.slug?.trim()) {
-      return NextResponse.json({ ok: false, error: "Nome e slug são obrigatórios." }, { status: 400 });
+    const parsed = categorySchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { ok: false, error: "Nome e slug são obrigatórios." },
+        { status: 400 }
+      );
     }
-    const category = await prisma.category.create({
-      data: { name: body.name.trim(), slug: body.slug.trim() },
-    });
+    const category = await prisma.category.create({ data: parsed.data });
     return NextResponse.json({ ok: true, category }, { status: 201 });
   } catch (e: any) {
     console.error(e);

@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import { getStorage } from "@/lib/storage";
+import { guardAdminMutation } from "@/lib/admin-guard";
 import {
   ALLOWED_EXTENSIONS,
   MAX_FILE_SIZE,
@@ -10,6 +11,8 @@ import {
 } from "@/lib/upload-validators";
 
 export async function POST(req: Request) {
+  const denied = await guardAdminMutation(req);
+  if (denied) return denied;
   try {
     const form = await req.formData();
     const file = form.get("file") as File;

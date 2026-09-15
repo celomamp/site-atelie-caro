@@ -1,7 +1,7 @@
 # Hardening — backlog
 
-Auditoria do codebase do Ateliê Carô feita em 2026-09-14. Itens **1–4 concluídos**
-nesta sessão; **5–23 pendentes** para as próximas sessões.
+Auditoria do codebase do Ateliê Carô feita em 2026-09-14. Itens **1–8 concluídos**;
+**9–23 pendentes** para as próximas sessões.
 
 Referência: `README.md`, `middleware.ts`, `lib/`, `app/api/`, `prisma/schema.prisma`.
 
@@ -57,31 +57,45 @@ Referência: `README.md`, `middleware.ts`, `lib/`, `app/api/`, `prisma/schema.pr
   em produção; `npx prisma migrate deploy` ou `npx prisma db push` no local).
   O `vercel-build` já roda `prisma migrate deploy` em produção.
 
+## Concluído na sessão 2
+
+### 5. Autorização só no middleware (CONCLUÍDO)
+- `lib/admin-guard.ts` — `requireAdmin()` revalida a sessão (`isAdmin()`) em cada
+  handler e responde `401`; chamado em todos os handlers de `app/api/admin/**`
+  (login é a única exceção, é o endpoint de autenticação).
+- Testes: `lib/__tests__/admin-guard.test.ts`.
+
+### 6. Mass assignment nas rotas admin (CONCLUÍDO)
+- `lib/admin-schemas.ts` — schemas Zod com whitelist explícita de campos
+  (`productCreateSchema`/`productUpdateSchema`, `workshopCreateSchema`/`...Update`,
+  `categorySchema`, `encomendaStatusSchema`). O Zod remove chaves desconhecidas,
+  então os handlers nunca fazem spread do corpo bruto no Prisma.
+- Rotas de produtos, oficinas, categorias e o `PUT` de encomenda passaram a
+  validar com `.safeParse()` e montar o objeto do Prisma campo a campo.
+- Dependência `zod` adicionada.
+- Testes: `lib/__tests__/admin-schemas.test.ts`,
+  `app/api/admin/produtos/route.test.ts`.
+
+### 7. Security headers (CONCLUÍDO)
+- `next.config.mjs` — `async headers()` aplica em `/:path*`:
+  `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy`,
+  `Permissions-Policy (camera/microphone/geolocation)` e
+  `Content-Security-Policy-Report-Only` (não bloqueia; vira enforce no upgrade
+  do Next, quando houver nonce para os scripts inline).
+- Verificado com `npm start` + `curl -I` (headers presentes, `X-Powered-By`
+  ausente).
+
+### 8. CSRF nas mutações do admin (CONCLUÍDO)
+- `lib/admin-guard.ts` — `isSameOriginRequest()`/`requireSameOrigin()`:
+  em produção exige `Sec-Fetch-Site: same-origin|none`, senão compara
+  `Origin` com `Host`; falha com `403`. Fora de produção libera (testes/CLI).
+- `guardAdminMutation()` combina sessão + origem e é usado em todos os
+  `POST`/`PUT`/`DELETE` do admin (inclui upload e logout). O login também valida
+  a origem.
+- Testes: `lib/__tests__/admin-guard.test.ts`.
+
 ## Pendentes
-
-### 5. Autorização só no middleware (ALTO)
-`middleware.ts` protege `/api/admin/*`, mas nenhum handler em `app/api/admin/**`
-revalida a sessão. Se o matcher mudar ou houver regressão, tudo expõe.
-- Criar um helper `requireAdmin()` e chamar no início de cada handler admin
-  (defesa em profundidade), ou usar um wrapper de rota.
-
-### 6. Mass assignment nas rotas admin (ALTO)
-- `app/api/admin/produtos/route.ts:14` e `produtos/[id]/route.ts:14` fazem
-  `...data` direto no Prisma.
-- `app/api/admin/oficinas/route.ts:7` e `oficinas/[id]/route.ts:7` fazem
-  `data: body`.
-- `app/api/admin/categorias/*` faz spread limitado, mas ainda sem whitelist.
-- Ação: whitelist explícita de campos + validação com Zod.
-
-### 7. Security headers (ALTO)
-`next.config.mjs` não define headers. Adicionar via `async headers()`:
-CSP, `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`,
-`X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`.
-Cuidado com CSP e scripts inline do Next — começar em Report-Only.
-
-### 8. CSRF nas mutações do admin (ALTO)
-Depende só do `SameSite` padrão do iron-session.
-- Validar `Origin`/`Sec-Fetch-Site` ou token CSRF nas rotas de mutação.
 
 ### 9. `x-forwarded-for` spoofável (MÉDIO)
 `lib/ratelimit.ts:clientIp` usa a primeira entrada do header, que pode ser
@@ -151,11 +165,19 @@ Migrar `next@14.2.35` → `next@16.x` + `react@19`:
   (`scripts/vercel-build.sh`).
 - Depois do upgrade, reavaliar `images.unoptimized` e os headers (#7).
 
-## Verificação desta sessão
+## Verificação da sessão 1 (itens 1–4)
 - `npx jest` → 22 suites, 165 testes passando.
 - `npm run lint` → sem warnings/erros.
 - `npx tsc --noEmit` → sem erros.
 - `npm run build` → sucesso.
 - `npx prisma validate` → schema válido.
+
+## Verificação da sessão 2 (itens 5–8)
+- `npx jest` → 25 suites, 188 testes passando.
+- `npm run lint` → sem warnings/erros.
+- `npx tsc --noEmit` → sem erros.
+- `npm run build` → sucesso.
+- `npm start` + `curl -I` → headers presentes; `POST /api/admin/produtos`
+  sem sessão retorna `401`.
 
 > Falta rodar a migration do rate limit no banco antes do deploy (item 3).

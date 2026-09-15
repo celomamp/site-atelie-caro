@@ -1,29 +1,23 @@
 // app/api/admin/produtos/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { guardAdminMutation } from "@/lib/admin-guard";
+import { productCreateSchema } from "@/lib/admin-schemas";
 
 export async function POST(req: Request) {
+  const denied = await guardAdminMutation(req);
+  if (denied) return denied;
   try {
-    const body = await req.json();
-    const num = (v: unknown, d: number) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : d; };
-    body.weight = num(body.weight, 2);
-    body.width = num(body.width, 30);
-    body.height = num(body.height, 20);
-    body.length = num(body.length, 20);
-    const { categories, ...data } = body;
+    const parsed = productCreateSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ ok: false }, { status: 400 });
+    }
+    const { categories, images, ...rest } = parsed.data;
     const product = await prisma.product.create({
       data: {
-        ...data,
-        images: JSON.stringify(body.images ?? []),
-        ...(categories
-          ? {
-              categories: {
-                connect: (Array.isArray(categories) ? categories : []).map((id: string) => ({
-                  id,
-                })),
-              },
-            }
-          : {}),
+        ...rest,
+        images: JSON.stringify(images),
+        categories: { connect: categories.map((id) => ({ id })) },
       },
     });
     return NextResponse.json({ ok: true, product }, { status: 201 });
