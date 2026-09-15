@@ -61,6 +61,17 @@ model CustomOrder {
   createdAt     DateTime @default(now())
 }
 
+// Contador de rate limit por janela fixa, compartilhado entre instâncias
+// serverless. id = `${chave}:${inicioDaJanela(ms)}`; expiresAt permite limpar
+// linhas antigas.
+model RateLimit {
+  id        String   @id
+  count     Int      @default(0)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 model Order {
   id            String   @id @default(cuid())
   name          String

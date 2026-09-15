@@ -2,9 +2,24 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildOrderRecord } from "@/lib/orders";
 import { validateAddress } from "@/lib/shipping";
+import { hit, clientIp } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
   try {
+    const rl = await hit(`orders:${clientIp(req)}`, {
+      limit: 20,
+      windowMs: 600000,
+    });
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Muitas tentativas. Tente novamente em instantes.",
+          retryAfter: rl.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
     const body = await req.json();
     const record = buildOrderRecord(body.name, body.contact, body.items);
 

@@ -2,9 +2,24 @@
 // Cria o pedido + preferência e devolve o init_point do Checkout Pro.
 import { NextResponse } from "next/server";
 import { CheckoutError, createMercadoPagoCheckout, FreightCheckoutError, getBaseUrl } from "@/lib/checkout";
+import { hit, clientIp } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
   try {
+    const rl = await hit(`checkout:${clientIp(req)}`, {
+      limit: 10,
+      windowMs: 600000,
+    });
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Muitas tentativas. Tente novamente em instantes.",
+          retryAfter: rl.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
     const body = await req.json();
     const result = await createMercadoPagoCheckout({
       name: body.name,

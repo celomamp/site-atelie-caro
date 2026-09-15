@@ -6,7 +6,10 @@ import {
   InvalidWebhookSignatureError,
   WebhookSignatureValidator,
 } from "mercadopago";
-import { parseWebhookNotification } from "@/lib/mercadopago";
+import {
+  parseWebhookNotification,
+  resolveWebhookSecretPolicy,
+} from "@/lib/mercadopago";
 import { applyMercadoPagoPaymentToOrder, fetchMercadoPagoPayment } from "@/lib/checkout";
 
 export async function POST(req: Request) {
@@ -27,13 +30,20 @@ export async function POST(req: Request) {
     if (!notification) return NextResponse.json({ ok: true });
 
     const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
-    if (secret) {
+    const secretPolicy = resolveWebhookSecretPolicy(secret, process.env.NODE_ENV);
+    if (secretPolicy === "reject") {
+      console.error(
+        "[webhook-mp] MERCADO_PAGO_WEBHOOK_SECRET não configurado — notificação rejeitada (fail-closed)."
+      );
+      return NextResponse.json({ ok: false }, { status: 500 });
+    }
+    if (secretPolicy === "validate") {
       try {
         WebhookSignatureValidator.validate({
           xSignature: req.headers.get("x-signature"),
           xRequestId: req.headers.get("x-request-id"),
           dataId: url.searchParams.get("data.id") ?? notification.paymentId,
-          secret,
+          secret: secret as string,
           toleranceSeconds: 300,
         });
       } catch (e) {
@@ -45,9 +55,9 @@ export async function POST(req: Request) {
         }
         throw e;
       }
-    } else if (process.env.NODE_ENV === "production") {
+    } else {
       console.warn(
-        "[webhook-mp] MERCADO_PAGO_WEBHOOK_SECRET não configurado — aceitando notificação sem validação de assinatura."
+        "[webhook-mp] MERCADO_PAGO_WEBHOOK_SECRET não configurado — aceitando notificação sem validação (ambiente fora de produção)."
       );
     }
 

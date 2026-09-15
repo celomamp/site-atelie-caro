@@ -1,6 +1,7 @@
 // app/api/shipping/quote/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { hit, clientIp } from "@/lib/ratelimit";
 import { normalizeCep } from "@/lib/shipping";
 import {
   getShippingOptions,
@@ -10,6 +11,20 @@ import {
 
 export async function POST(req: Request) {
   try {
+    const rl = await hit(`shipping-quote:${clientIp(req)}`, {
+      limit: 30,
+      windowMs: 600000,
+    });
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Muitas tentativas. Tente novamente em instantes.",
+          retryAfter: rl.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
     const body = await req.json().catch(() => ({}));
     const toCep = normalizeCep(body.cep);
     if (!toCep) return NextResponse.json({ ok: false, error: "Informe um CEP válido com 8 dígitos." }, { status: 400 });

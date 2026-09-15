@@ -8,6 +8,7 @@ import {
   validateCheckoutInput,
   parseWebhookNotification,
   resolveBaseUrl,
+  resolveWebhookSecretPolicy,
 } from "../mercadopago";
 
 describe("orderStatusFromPaymentStatus", () => {
@@ -237,6 +238,26 @@ describe("parseWebhookNotification", () => {
     expect(
       parseWebhookNotification({ searchParams: new URLSearchParams(), body: null })
     ).toBeNull();
+  });
+});
+
+describe("resolveWebhookSecretPolicy", () => {
+  it("validates the signature when a secret is configured", () => {
+    expect(resolveWebhookSecretPolicy("segredo", "production")).toBe("validate");
+    expect(resolveWebhookSecretPolicy("segredo", "development")).toBe("validate");
+  });
+
+  it("fails closed in production when the secret is missing or empty", () => {
+    expect(resolveWebhookSecretPolicy(undefined, "production")).toBe("reject");
+    expect(resolveWebhookSecretPolicy("", "production")).toBe("reject");
+    expect(resolveWebhookSecretPolicy("   ", "production")).toBe("reject");
+  });
+
+  it("allows unvalidated notifications outside production", () => {
+    expect(resolveWebhookSecretPolicy(undefined, "development")).toBe(
+      "allow-unvalidated"
+    );
+    expect(resolveWebhookSecretPolicy("", "test")).toBe("allow-unvalidated");
   });
 });
 

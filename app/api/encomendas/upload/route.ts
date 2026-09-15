@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import { getStorage } from "@/lib/storage";
-import { hit } from "@/lib/ratelimit";
+import { hit, clientIp } from "@/lib/ratelimit";
 import {
   ALLOWED_EXTENSIONS,
   MAX_FILE_SIZE,
@@ -14,9 +14,10 @@ import { MAX_ENCOMENDA_IMAGES } from "@/lib/encomendas";
 
 export async function POST(req: Request) {
   try {
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const rl = hit(`encomenda-upload:${ip}`, { limit: 10, windowMs: 600000 });
+    const rl = await hit(`encomenda-upload:${clientIp(req)}`, {
+      limit: 10,
+      windowMs: 600000,
+    });
     if (!rl.ok) {
       return NextResponse.json(
         { ok: false, retryAfter: rl.retryAfter },

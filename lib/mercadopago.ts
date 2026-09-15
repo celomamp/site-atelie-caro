@@ -41,6 +41,19 @@ export type PreferencePayload = {
   };
 };
 
+// Política de validação da assinatura do webhook. Com secret configurado,
+// valida a assinatura; sem secret, em produção rejeita (fail-closed) e fora de
+// produção permite apenas para facilitar testes locais.
+export type WebhookSecretPolicy = "validate" | "allow-unvalidated" | "reject";
+
+export function resolveWebhookSecretPolicy(
+  secret: string | undefined,
+  nodeEnv: string | undefined
+): WebhookSecretPolicy {
+  if (typeof secret === "string" && secret.trim() !== "") return "validate";
+  return nodeEnv === "production" ? "reject" : "allow-unvalidated";
+}
+
 // Status do Mercado Pago → status interno do pedido (Order.status)
 export function orderStatusFromPaymentStatus(status: string): string {
   switch (status) {

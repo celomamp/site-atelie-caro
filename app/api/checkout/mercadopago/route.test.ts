@@ -8,6 +8,11 @@ import {
   createMercadoPagoCheckout,
 } from "@/lib/checkout";
 
+jest.mock("@/lib/ratelimit", () => ({
+  hit: jest.fn(async () => ({ ok: true, retryAfter: 0 })),
+  clientIp: jest.fn(() => "127.0.0.1"),
+}));
+
 jest.mock("@/lib/checkout", () => {
   class CheckoutError extends Error {}
   class FreightCheckoutError extends CheckoutError {}

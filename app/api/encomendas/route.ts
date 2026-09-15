@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseEncomendaPayload } from "@/lib/encomendas";
+import { hit, clientIp } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
   try {
+    const rl = await hit(`encomendas:${clientIp(req)}`, {
+      limit: 10,
+      windowMs: 600000,
+    });
+    if (!rl.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Muitas tentativas. Tente novamente em instantes.",
+          retryAfter: rl.retryAfter,
+        },
+        { status: 429 }
+      );
+    }
     const body = await req.json();
     const parsed = parseEncomendaPayload(body);
     if (!parsed.ok) {
