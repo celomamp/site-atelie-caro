@@ -84,18 +84,10 @@ export default async function HomePage() {
                       price: Number(product.price),
                       images,
                       available: product.available,
+                      stock: product.stock,
                     }}
                   />
                   <FavoriteButton slug={product.slug} />
-                  {product.stock <= 0 ? (
-                    <span className="absolute right-2 top-2 rounded bg-clay px-2 py-1 text-xs font-bold text-white">
-                      Esgotado
-                    </span>
-                  ) : product.stock <= 1 ? (
-                    <span className="absolute right-2 top-2 rounded bg-magenta px-2 py-1 text-xs font-bold text-white">
-                      Peça única
-                    </span>
-                  ) : null}
                 </div>
               );
             })}
