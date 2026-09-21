@@ -175,7 +175,6 @@ export default function EncomendaForm({
         >
           {submitting ? "Enviando..." : "Enviar encomenda"}
         </button>
-        <p className="text-xs leading-relaxed text-gray-500">{ENCOMENDA_DISCLAIMER}</p>
       </div>
     </form>
   );
