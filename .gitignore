@@ -7,5 +7,9 @@ next-env.d.ts
 prisma/dev.db
 prisma/dev.db-journal
 .env
+.env.producao.local
+docs/Fotos Atelie/
+coverage/
+.DS_Store
 public/uploads/*
 !public/uploads/.gitkeep
