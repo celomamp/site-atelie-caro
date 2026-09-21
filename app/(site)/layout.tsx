@@ -1,6 +1,7 @@
 // app/(site)/layout.tsx
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AnnouncementBar from "@/components/AnnouncementBar";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       >
         Pular para o conteúdo
       </a>
+      <AnnouncementBar />
       <Header />
       <main id="conteudo" className="flex-1">{children}</main>
       <Footer />
