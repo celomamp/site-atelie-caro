@@ -16,6 +16,8 @@ export default function SortSelect({ categoria, ordenar, favoritos }: { categori
       }}
     >
       <option value="">Ordenar</option>
+      <option value="az">A - Z</option>
+      <option value="za">Z - A</option>
       <option value="menor">Menor preço</option>
       <option value="maior">Maior preço</option>
     </select>

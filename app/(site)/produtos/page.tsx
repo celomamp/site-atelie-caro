@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import SortSelect from "@/components/SortSelect";
 import ProductsGrid from "@/components/ProductsGrid";
 import { parseImages } from "@/lib/images";
+import { productOrderBy } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +24,7 @@ export default async function ProdutosPage({
       available: true,
       ...(selected ? { categories: { some: { id: selected.id } } } : {}),
     },
-    orderBy:
-      order === "menor"
-        ? { price: "asc" }
-        : order === "maior"
-        ? { price: "desc" }
-        : { createdAt: "desc" },
+    orderBy: productOrderBy(order),
   });
 
   return (
