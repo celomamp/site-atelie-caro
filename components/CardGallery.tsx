@@ -1,6 +1,6 @@
 // components/CardGallery.tsx
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { nextIndex, prevIndex } from "@/lib/images";
 
 type Props = {
@@ -10,6 +10,26 @@ type Props = {
 
 export default function CardGallery({ images, alt }: Props) {
   const [index, setIndex] = useState(0);
+  const [hovering, setHovering] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [autoplayEpoch, setAutoplayEpoch] = useState(0);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!hovering || reducedMotion || images.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex((i) => nextIndex(i, images.length));
+    }, 2000);
+    return () => clearInterval(id);
+  }, [hovering, reducedMotion, images.length, autoplayEpoch]);
 
   if (images.length === 0) {
     return <div className="aspect-square bg-cream" />;
@@ -23,8 +43,26 @@ export default function CardGallery({ images, alt }: Props) {
     e.stopPropagation();
   }
 
+  function restartAutoplay() {
+    setAutoplayEpoch((n) => n + 1);
+  }
+
+  function goPrev() {
+    setIndex((i) => prevIndex(i, images.length));
+    restartAutoplay();
+  }
+
+  function goNext() {
+    setIndex((i) => nextIndex(i, images.length));
+    restartAutoplay();
+  }
+
   return (
-    <div className="relative aspect-square overflow-hidden bg-cream">
+    <div
+      className="relative aspect-square overflow-hidden bg-cream"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={current} alt={alt} className="h-full w-full object-cover" />
       {many && (
@@ -34,7 +72,7 @@ export default function CardGallery({ images, alt }: Props) {
             aria-label="Foto anterior"
             onClick={(e) => {
               stop(e);
-              setIndex((i) => prevIndex(i, images.length));
+              goPrev();
             }}
             className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 text-sm leading-none shadow hover:bg-white"
           >
@@ -45,29 +83,12 @@ export default function CardGallery({ images, alt }: Props) {
             aria-label="Próxima foto"
             onClick={(e) => {
               stop(e);
-              setIndex((i) => nextIndex(i, images.length));
+              goNext();
             }}
             className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 text-sm leading-none shadow hover:bg-white"
           >
             ›
           </button>
-          <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1">
-            {images.map((img, i) => (
-              <button
-                key={img + i}
-                type="button"
-                aria-label={`Ir para foto ${i + 1}`}
-                aria-current={i === index ? "true" : undefined}
-                onClick={(e) => {
-                  stop(e);
-                  setIndex(i);
-                }}
-                className="flex h-6 w-6 items-center justify-center"
-              >
-                <span className={`h-1.5 w-1.5 rounded-full transition ${i === index ? "bg-cobalt" : "bg-white/80 hover:bg-white"}`} />
-              </button>
-            ))}
-          </div>
         </>
       )}
     </div>
