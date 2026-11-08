@@ -32,6 +32,8 @@ function mpClient(): MercadoPagoConfig {
     console.error("MERCADO_PAGO_ACCESS_TOKEN não configurado.");
     throw new CheckoutError("Pagamento indisponível no momento.");
   }
+
+  console.log("Mercado Pago Token", process.env.MERCADO_PAGO_ACCESS_TOKEN);
   return new MercadoPagoConfig({ accessToken });
 }
 

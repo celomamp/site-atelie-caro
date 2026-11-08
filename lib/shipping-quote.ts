@@ -57,6 +57,7 @@ export async function getShippingOptions(
 ): Promise<ShippingOption[]> {
   const fromCep = (process.env.MELHOR_ENVIO_ORIGEM_CEP ?? "").replace(/\D/g, "");
   const token = process.env.MELHOR_ENVIO_TOKEN ?? "";
+  console.log("TOKEN MELHOR ENVIO", token);
   if (!fromCep || !token)
     throw new ShippingQuoteError(
       "Frete indisponível no momento. Conclua como frete a combinar."

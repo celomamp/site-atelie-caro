@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     if (!notification) return NextResponse.json({ ok: true });
 
     const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
+    console.log("Mercado Pago Webhook Secret", process.env.MERCADO_PAGO_WEBHOOK_SECRET);
     const secretPolicy = resolveWebhookSecretPolicy(secret, process.env.NODE_ENV);
     if (secretPolicy === "reject") {
       console.error(
